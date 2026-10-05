@@ -1,8 +1,8 @@
 # W4: Pick frontend approach
 
 **Type:** research
-**State:** open
-**Assignee:** (unclaimed)
+**State:** resolved
+**Assignee:** opencode-research
 **Blocked by:** (none)
 **Blocks:** W11, W22
 
@@ -28,3 +28,11 @@ How is the frontend built? The candidate set:
 ## What "good" looks like
 
 A clear single recommendation with reasoning. If a JS framework is chosen, justify it over the server-rendered path (and vice versa). Pay attention to: how real-time is wired in (EventSource / WebSocket / polling), how forms are submitted, how the bracket is rendered. Suggested filename `research/W4-frontend-approach.md`.
+
+## Resolution
+
+**Chosen approach: htmx 2 + Alpine.js 3 + Go `html/template`.** Server-rendered HTML, no JavaScript toolchain, no build step.
+
+**Why, in one line:** For v1's scope (single-elimination, server-driven state, no drag-drop, no animated bracket transitions) the CSS-Grid + Alpine bracket pattern is simpler than a component framework, and in return we eliminate Node/npm, the multi-stage container, and the WS/SSE wiring code we'd otherwise own.
+
+Detailed comparison, alternatives considered (Svelte, Vue, React, htmx-only) and source links: `research/W4-frontend-approach.md` on branch `research/W4`.

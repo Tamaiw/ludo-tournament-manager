@@ -1,8 +1,8 @@
 # W2: Pick Go WebSocket library
 
 **Type:** research
-**State:** open
-**Assignee:** (unclaimed)
+**State:** resolved
+**Assignee:** opencode-research
 **Blocked by:** (none)
 **Blocks:** W11, W22
 
@@ -22,3 +22,11 @@ Which WebSocket library fits the Go backend — `gorilla/websocket`, `coder/webs
 ## What "good" looks like
 
 A clear single recommendation with reasoning. Use Context7 for current docs on each candidate; check maintenance status (last release, open issues) before committing. Suggested filename `research/W2-go-websocket-library.md`.
+
+## Resolution
+
+**Chosen library:** [`github.com/coder/websocket`](https://github.com/coder/websocket) (formerly `nhooyr.io/websocket`).
+
+**Why:** Only one with active maintenance in 2026. `gorilla/websocket` is de facto stalled (last release v1.5.3 in June 2024, last commit March 2025). `coder/websocket` ships commits every few weeks and is backed by Coder. It gives us first-class `context.Context` support, safe concurrent writes (no per-connection mutex for broadcasting), a built-in ping/pong API, and is pure Go with zero dependencies — so Linux/Windows builds are identical and it slots behind any stdlib-shaped framework.
+
+Detailed comparison, alternatives considered (gorilla, melody, others) and source links: `research/W2-go-websocket-library.md` on branch `research/W2`.
