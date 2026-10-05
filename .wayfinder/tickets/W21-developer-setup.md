@@ -1,8 +1,8 @@
 # W21: Set up developer environment
 
 **Type:** task
-**State:** open
-**Assignee:** (unclaimed)
+**State:** resolved
+**Assignee:** opencode
 **Blocked by:** (none)
 **Blocks:** (gates implementation — no real code can be written until this is done)
 
@@ -51,3 +51,4 @@ The deliverable lives in `docs/setup*.md`. The ticket closes with the path to th
 - CI / GitHub Actions setup
 - Production secrets management
 - Domain / TLS provisioning for the Hetzner VPS
+- Additional MCP servers for AI agents — `codebase-memory-mcp` (structural code discovery) and `context7` (library docs) are already configured at `~/.config/opencode/` and are exactly what AI agents need on this codebase. No more are required.
