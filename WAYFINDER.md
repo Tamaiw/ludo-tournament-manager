@@ -13,6 +13,7 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
   - Container-first: deployment runs in containers (docker compose)
   - No TypeScript anywhere (user excluded it explicitly)
   - Backend language: Go
+  - **Backend architecture: hexagonal (ports & adapters)** — domain at centre, adapters as the only outward contact; directory layout + port boundaries locked by W12
   - Single-elimination brackets only; data model flexible enough to add other formats later
   - Open spectator view (browse without account); login only for actions
   - Invite-based user onboarding: manager enters email → token-link invite → user sets password
@@ -30,9 +31,7 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
 Open, unblocked tickets, ready for a session to claim. Each is the body of `.wayfinder/tickets/<id>-*.md`.
 
 - [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md) *(grilling)*
-- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) *(grilling)*
-- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(research)*
-- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(research)*
+- [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
 
@@ -40,8 +39,11 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 
 Open tickets, waiting on the frontier. Discovered by the dependency graph; close after resolve.
 
+- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) *(blocked by W12)*
 - [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) *(blocked by W6)*
-- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(blocked by W5)*
+- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(blocked by W12)*
+- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(blocked by W12)*
+- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(blocked by W5, W12)*
 
 ## Decisions so far
 
