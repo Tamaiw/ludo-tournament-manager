@@ -14,6 +14,7 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
   - No TypeScript anywhere (user excluded it explicitly)
   - Backend language: Go
   - **Backend architecture: hexagonal (ports & adapters)** — domain at centre, adapters as the only outward contact; directory layout + port boundaries locked by W12
+  - **Future-split guardrail**: kept as a single binary, but structured so a future split into separate services (Go JSON adapter + JS frontend) is tractable; do not let business logic leak into adapters
   - Single-elimination brackets only; data model flexible enough to add other formats later
   - Open spectator view (browse without account); login only for actions
   - Invite-based user onboarding: manager enters email → token-link invite → user sets password
@@ -30,7 +31,6 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
 
 Open, unblocked tickets, ready for a session to claim. Each is the body of `.wayfinder/tickets/<id>-*.md`.
 
-- [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md) *(grilling)*
 - [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
@@ -51,6 +51,7 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 - [W2: Pick Go WebSocket library](./.wayfinder/tickets/W2-pick-go-websocket-library.md): **`coder/websocket`** — only candidate with active maintenance in 2026; gorilla stalled since 2024
 - [W3: Pick database engine](./.wayfinder/tickets/W3-pick-database-engine.md): **SQLite** (WAL, `modernc.org/sqlite` driver) — single-machine deployment, one-file backup, cgo-free Windows builds
 - [W4: Pick frontend approach](./.wayfinder/tickets/W4-pick-frontend-approach.md): **htmx 2 + Alpine 3 + Go `html/template`** — no JS toolchain, server-rendered, bracket fits CSS-Grid + Alpine for v1 scope
+- [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md): **Monorepo, Go in `/backend/`** — no separate frontend codebase; modular monolith (hexagonal) makes future split tractable if needed
 - [W8: Transactional email approach](./.wayfinder/tickets/W8-transactional-email-approach.md): **Resend (prod) + Mailpit (dev)** via `net/smtp` — same code path, config flip; Resend's pre-warmed shared IPs sidestep the Hetzner reputation trap
 
 ## Not yet specified
