@@ -23,8 +23,9 @@ Install and verify all developer software required before any real code is writt
 - **Git** (likely already present, but verify)
   - Verify: `git --version`, `git config user.name` / `user.email` set
 - **A code editor** — VS Code recommended (cross-platform)
-  - Install the official Go extension
+  - Install the official Go extension — bundles `gopls` (the Go language server) automatically, giving you real-time errors, autocomplete, go-to-definition, and rename refactoring in-editor
   - Optionally: editorconfig extension for consistent formatting
+- **gopls** (if not using VS Code) — install standalone with `go install golang.org/x/tools/gopls@latest` for other editors (Neovim, Helix, etc.)
 - **SQLite CLI** (for inspecting and backing up the DB during dev)
   - Cross-platform installer / package (`apt install sqlite3`, etc.)
   - Verify: `sqlite3 --version`

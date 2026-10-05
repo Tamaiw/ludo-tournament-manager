@@ -34,6 +34,7 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 - [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
+- [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md) *(task, gates implementation)*
 
 ## Blocked
 
