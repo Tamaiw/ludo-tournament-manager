@@ -3,7 +3,7 @@
 **Type:** grilling
 **State:** open
 **Assignee:** (unclaimed)
-**Blocked by:** W5 ✓, W1 ✓, W2 ✓, W3 ✓, W4 ✓, W12
+**Blocked by:** W5 ✓, W1 ✓, W2 ✓, W3 ✓, W4 ✓, W12 ✓
 **Blocks:** W21
 
 ## Question

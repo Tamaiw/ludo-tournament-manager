@@ -31,7 +31,10 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
 
 Open, unblocked tickets, ready for a session to claim. Each is the body of `.wayfinder/tickets/<id>-*.md`.
 
-- [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md) *(grilling)*
+- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) *(grilling)*
+- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(research)*
+- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(research)*
+- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
 
@@ -39,11 +42,7 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 
 Open tickets, waiting on the frontier. Discovered by the dependency graph; close after resolve.
 
-- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) *(blocked by W12)*
 - [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) *(blocked by W6)*
-- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(blocked by W12)*
-- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(blocked by W12)*
-- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(blocked by W5, W12)*
 
 ## Decisions so far
 
@@ -53,6 +52,7 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 - [W4: Pick frontend approach](./.wayfinder/tickets/W4-pick-frontend-approach.md): **htmx 2 + Alpine 3 + Go `html/template`** — no JS toolchain, server-rendered, bracket fits CSS-Grid + Alpine for v1 scope
 - [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md): **Monorepo, Go in `/backend/`** — no separate frontend codebase; modular monolith (hexagonal) makes future split tractable if needed
 - [W8: Transactional email approach](./.wayfinder/tickets/W8-transactional-email-approach.md): **Resend (prod) + Mailpit (dev)** via `net/smtp` — same code path, config flip; Resend's pre-warmed shared IPs sidestep the Hetzner reputation trap
+- [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md): **Hexagonal (ports & adapters)** — `internal/core/{domain,ports,services}` + `internal/adapters/{inbound,outbound}`, composition root in `cmd/server/main.go`; full layout at [`docs/architecture/hexagonal.md`](./docs/architecture/hexagonal.md), ADR [`0001`](./docs/adr/0001-hexagonal-backend.md)
 - [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md): **All dev tools installed** (Go 1.26.8, Docker 29.8.2, VS Code + Go extension, gopls, SQLite CLI, Make); guide at [`docs/setup.md`](./docs/setup.md) — gates implementation
 
 ## Not yet specified

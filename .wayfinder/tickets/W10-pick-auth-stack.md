@@ -3,7 +3,7 @@
 **Type:** research
 **State:** open
 **Assignee:** (unclaimed)
-**Blocked by:** W1 ✓, W12
+**Blocked by:** W1 ✓, W12 ✓
 **Blocks:** W21
 
 ## Question

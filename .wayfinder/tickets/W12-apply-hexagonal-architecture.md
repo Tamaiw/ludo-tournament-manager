@@ -1,7 +1,7 @@
 # W12: Apply hexagonal architecture to backend
 
 **Type:** grilling
-**State:** in-progress
+**State:** resolved
 **Assignee:** opencode
 **Blocked by:** (none)
 **Blocks:** W6, W9, W10, W11
@@ -10,34 +10,74 @@
 
 Apply hexagonal (ports & adapters) architecture to the Go backend: lock down the layer boundaries, the directory layout under `backend/`, and which concerns are interfaces (ports) vs in-process helpers.
 
-## Specific things to settle
+## Resolution
 
-- **Directory layout** under `backend/`:
-  - `internal/domain/` — entities (`Tournament`, `Match`, `BracketNode`, `User`, `Invite`) + value types; pure Go, no DB tags, no JSON tags
-  - `internal/ports/` — interfaces: `TournamentRepository`, `MatchRepository`, `UserRepository`, `PasswordHasher`, `EmailSender`, `SessionStore`, `BracketGenerator`, `InviteSigner`, real-time `Broadcaster`
-  - `internal/app/` — use case services that orchestrate domain + ports: `CreateTournament`, `RegisterPlayer`, `RecordMatchResult`, `InviteUser`, `AcceptInvite`, `SignIn`, etc.
-  - `internal/adapters/` — concrete adapters grouped by direction
-    - inbound (driving): `http_handler/` (Chi), `ws_handler/` (`coder/websocket`)
-    - outbound (driven): `sqlite_repo/`, `smtp_sender/`, `bcrypt_hasher/`, `cookie_sessions/`
-    - in-process: `bracket_gen/` (pure algorithm; lives in `internal/app/` or `internal/domain/` — decide)
-  - `cmd/server/main.go` — composition root: read config, instantiate adapters, wire them into use cases, hand the wired use cases to the HTTP/WS handlers, start the server
-- **Port vs in-process helper**: e.g. is the bracket generator a port with adapter, or a pure domain service? Decide one rule and apply it.
-- **Testability story**: mock adapters live alongside real ones (e.g. `internal/adapters/sqlite_repo/mem_repo.go` or `internal/adapters/mem/`) so unit tests for use cases run without DB or SMTP.
-- **Dependency direction** (the rule that makes hexagonal work):
-  - `domain` → depends on nothing else in the project
-  - `app` → depends on `domain` + `ports`
-  - `adapters` → depends on `app` + `ports`
-  - `cmd` → depends on everything (composition root only)
-  - No upward dependencies; no adapter-to-adapter imports.
-- **`embed.FS` for templates**: where in the tree does `templates/*.html` live so the binary ships them self-contained? Convention is `internal/adapters/http_handler/templates/` and `embed.FS` declared at the adapter.
+**Architecture chosen:** hexagonal (ports & adapters). Application core under `internal/core/{domain,ports,services}`; adapters under `internal/adapters/{inbound,outbound}`; composition root at `cmd/server/main.go`.
 
-## Constraints
+**Layout** (locked):
 
-- Backend is Go; framework is Chi (resolved by W1); DB is SQLite via `modernc.org/sqlite` (resolved by W3); WebSocket is `coder/websocket` (resolved by W2)
-- This is a Go-idiomatic hexagonal layout — flat packages, no class-heavy inheritance; avoid pretending Go is Java
-- Frontend is server-rendered htmx + Alpine (resolved by W4); the inbound boundary is HTTP requests and WS upgrades only
-- Email via Resend (prod) / Mailpit (dev) (resolved by W8); wired behind an `EmailSender` port
+```
+backend/
+├── go.mod, go.sum
+├── cmd/server/main.go                       (composition root — the only file that imports everything)
+└── internal/
+    │
+    ├── core/                                [CORE wrapper — domain logic + contracts]
+    │   ├── domain/                          (entities, value types, pure logic; no project imports)
+    │   │   ├── tournament.go, match.go, bracket.go, user.go, invite.go
+    │   │   └── bracket_gen.go               (PURE single-elim algorithm — domain logic, not a port)
+    │   ├── ports/                           (interfaces only; depends on domain only)
+    │   │   ├── repository.go                (TournamentRepo, MatchRepo, UserRepo, InviteRepo, SessionRepo)
+    │   │   ├── auth.go                      (PasswordHasher, SessionStore, InviteSigner)
+    │   │   ├── realtime.go                  (Broadcaster)
+    │   │   └── clock.go                     (Clock — for testability)
+    │   └── services/                        (use case services; depends on ports + domain)
+    │       ├── create_tournament.go
+    │       ├── register_player.go
+    │       ├── record_match_result.go
+    │       ├── invite_user.go
+    │       ├── accept_invite.go
+    │       ├── sign_in.go
+    │       └── sign_out.go
+    │
+    └── adapters/                            [ADAPTERS — implement the ports]
+        ├── inbound/                         (driving adapters)
+        │   ├── http/
+        │   │   ├── server.go                (Chi setup, route registration)
+        │   │   ├── handlers/                (per-resource)
+        │   │   ├── middleware/              (logging, request id, auth)
+        │   │   └── templates/               (embedded via embed.FS)
+        │   └── ws/                          (coder/websocket hub — implements Broadcaster)
+        └── outbound/                        (driven adapters)
+            ├── sqlite/                      (one repo file per entity)
+            ├── smtp/                        (Resend / Mailpit)
+            ├── bcrypt/
+            └── session/                     (cookie sessions)
+```
 
-## What "good" looks like
+**Dependency direction** (the rule that makes it hexagonal):
 
-A written layout sketch as a resolution comment, plus a one-pager (`docs/architecture/hexagonal.md`) or ADR (`docs/adr/0001-hexagonal-backend.md`) naming each package, what goes in it, and what it depends on. This is the convention W6, W9, W10, W11 build on.
+```
+cmd/server    →  all  (composition root only)
+adapters      →  core  (implements ports, orchestrates services)
+core/services →  core/ports, core/domain
+core/ports    →  core/domain
+core/domain   →  (nothing — no project imports)
+```
+
+**Specific decisions locked (Q1–Q5):**
+- **Layout** — `core/` wrapper + `services/` naming adopted; brackets generator in `core/domain/` (domain logic, not a port)
+- **Templates** — `internal/adapters/inbound/http/templates/`; `embed.FS` declared in the http package
+- **Tests** — white-box for `core/domain/` (internal access for invariants); mostly black-box (`package services_test`) for `core/services/` (test through the public method); white-box where invariants are easier to set up
+- **Logging** — at the HTTP boundary via middleware in `adapters/inbound/http/middleware/`; domain stays pure
+
+**Compile-time check** (the rule that makes the architecture actually hexagonal — build breaks if an adapter drifts from its port):
+
+```go
+// In every adapter file:
+var _ ports.TournamentRepository = (*sqlite.TournamentRepo)(nil)
+```
+
+**Full architecture writeup:** [`docs/architecture/hexagonal.md`](../../docs/architecture/hexagonal.md).
+
+**ADR:** [`docs/adr/0001-hexagonal-backend.md`](../../docs/adr/0001-hexagonal-backend.md).
