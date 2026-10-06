@@ -5,7 +5,7 @@ A web application for organising and running Ludo tournaments. Managers create t
 ## Language
 
 **Tournament**:
-A single-elimination bracket event with a fixed set of registered players, a start time, and a final winner.
+A multi-player elimination event with a fixed set of registered players, a start time, and a final winner. Each match in the bracket has 2-4 participants (a single Ludo game played on a physical board); the manager decides how many finishers advance from each match, and the final round has exactly 4 players whose finishing positions determine 1st/2nd/3rd/4th place.
 _Avoid_: Event, contest, league
 
 **Manager**:
@@ -21,13 +21,33 @@ Anyone viewing a tournament. Spectators do not need an account; they have read-o
 _Avoid_: Viewer, observer
 
 **Match**:
-A single game between two players within a tournament. Has a status, two participants (once determined), and a recorded outcome that advances the bracket.
+A single Ludo game within a tournament. Has 2 to 4 participants, a status, and a recorded outcome that advances the bracket. Each Ludo game is played on a physical board; the app records the outcome, it does not run the game.
 _Avoid_: Game, round — a Round is the set of Matches at the same depth in the bracket
 
+**Round**:
+The set of matches at the same depth in the bracket. A tournament progresses round by round, with the top finishers from each match in round N advancing to round N+1.
+_Avoid_: Level, stage
+
 **Bracket**:
-The full single-elimination tree for a tournament: every match, its dependency on previous matches, and the path to the final.
+The full elimination structure for a tournament: every match, its dependency on previous matches, and the path to the final. In this app, a bracket is a multi-player elimination where each match has 2-4 players and the manager decides how many finishers advance from each match.
 _Avoid_: Tree, ladder
 
-**Invite**:
-The mechanism for creating a new user. A Manager enters an email; the system emails a token link; clicking it lets the recipient set a password.
-_Avoid_: Signup, registration — those terms refer to joining a tournament, not creating an account
+**Match Participant**:
+A player's entry in a match, recording their finishing position (1 = winner, 2 = second, 3 = third, 4 = fourth). Positions for players who do not advance are optional and may go unrecorded.
+_Avoid_: Match entry, slot
+
+**Advancing Position**:
+The finishing position a participant earned in a match. Participants with advancing positions 1 through N (where N is the per-round advance count) proceed to the next round; the rest are eliminated.
+_Avoid_: Rank, place
+
+**Bye**:
+A player who is automatically advanced to the next round without playing a match. Byes are not matches; they exist only when player count does not divide cleanly into the configured game size.
+_Avoid_: Skip, pass
+
+**Seed**:
+A number assigned to a registered player that determines their position in the bracket when the tournament starts. Lower numbers indicate stronger players (seed 1 is the top seed). When the manager does not assign seeds, the system generates them randomly at bracket-generation time. Manager edits to seeds are recorded in the audit log.
+_Avoid_: Ranking, rating
+
+**Tournament Audit Log**:
+A record of every state-changing action taken on a tournament (seed changes, manager roster changes, registration transitions, match results, cancellations). Visible to managers; not exposed to spectators.
+_Avoid_: History (ambiguous — also used for player match history)

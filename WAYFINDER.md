@@ -2,7 +2,7 @@
 
 ## Destination
 
-A working MVP for a Ludo tournament manager (Go backend + web frontend), containerized for local development and Hetzner/homelab deployment, with real-time bracket updates, single-elimination format, invite-only user onboarding, and support for tournaments of up to ~100 players.
+A working MVP for a Ludo tournament manager (Go backend + web frontend), containerized for local development and Hetzner/homelab deployment, with real-time bracket updates, multi-player elimination format (2-4 players per match, 4-player final), invite-only user onboarding, and support for tournaments of up to ~200 players.
 
 ## Notes
 
@@ -15,7 +15,7 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
   - Backend language: Go
   - **Backend architecture: hexagonal (ports & adapters)** — domain at centre, adapters as the only outward contact; directory layout + port boundaries locked by W12
   - **Future-split guardrail**: kept as a single binary, but structured so a future split into separate services (Go JSON adapter + JS frontend) is tractable; do not let business logic leak into adapters
-  - Single-elimination brackets only; data model flexible enough to add other formats later
+  - Multi-player elimination brackets only (2-4 players per match, manager-tunable advance count per round, 4-player final); data model flexible enough to add other formats later
   - Open spectator view (browse without account); login only for actions
   - Invite-based user onboarding: manager enters email → token-link invite → user sets password
   - First manager bootstrapped via `docker compose run seed`
@@ -31,7 +31,6 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
 
 Open, unblocked tickets, ready for a session to claim. Each is the body of `.wayfinder/tickets/<id>-*.md`.
 
-- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) *(grilling)*
 - [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(research)*
 - [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(research)*
 - [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(grilling)*
@@ -42,7 +41,11 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 
 Open tickets, waiting on the frontier. Discovered by the dependency graph; close after resolve.
 
-- [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) *(blocked by W6)*
+- [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) *(blocked by W6)* — W6 closed, blocker cleared, ticket ready to claim
+
+## Recently closed
+
+- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) — domain model in [`docs/domain-model.md`](./docs/domain-model.md); bracket representation decision in [ADR 0002](./docs/adr/0002-bracket-representation.md); glossary updated in [`CONTEXT.md`](./CONTEXT.md)
 
 ## Decisions so far
 
@@ -53,6 +56,7 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 - [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md): **Monorepo, Go in `/backend/`** — no separate frontend codebase; modular monolith (hexagonal) makes future split tractable if needed
 - [W8: Transactional email approach](./.wayfinder/tickets/W8-transactional-email-approach.md): **Resend (prod) + Mailpit (dev)** via `net/smtp` — same code path, config flip; Resend's pre-warmed shared IPs sidestep the Hetzner reputation trap
 - [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md): **Hexagonal (ports & adapters)** — `internal/core/{domain,ports,services}` + `internal/adapters/{inbound,outbound}`, composition root in `cmd/server/main.go`; full layout at [`docs/architecture/hexagonal.md`](./docs/architecture/hexagonal.md), ADR [`0001`](./docs/adr/0001-hexagonal-backend.md)
+- [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md): **Multi-player elimination, adjacency-list bracket** — 2-4 player matches, manager-configurable per-round advance count, 4-player final; model in [`docs/domain-model.md`](./docs/domain-model.md), ADR [`0002`](./docs/adr/0002-bracket-representation.md), glossary in [`CONTEXT.md`](./CONTEXT.md)
 - [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md): **All dev tools installed** (Go 1.26.8, Docker 29.8.2, VS Code + Go extension, gopls, SQLite CLI, Make); guide at [`docs/setup.md`](./docs/setup.md) — gates implementation
 
 ## Not yet specified
@@ -60,10 +64,10 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 <!-- see "Fog of war": in-scope fog you can't ticket yet; graduates as the frontier advances -->
 
 - **Public tournament discovery**: how are tournaments listed/found by spectators (browse all, search, filter by status, filter by date)? UI shape — covered partially by the W4 stack lock, but the exact feature set is open.
-- **Tournament audit trail**: is there a record of who did what when on a tournament (manager edits, match results, registrations)? v2 candidate.
 - **Tournament time zones**: how are scheduled times displayed when organizer and players are in different zones? (Store UTC, render in user TZ is the working assumption; this is a "how do we render" decision.)
 - **Notifications**: do players/managers get email when a tournament starts, when their match is ready, when the bracket advances? Resend is in place for transactional; notifications would be a separate trigger surface.
 - **Styling system**: plain CSS, a small utility framework, or scoped styles in Alpine components. Depends on how big the bracket CSS-Grid pattern turns out to be (a W4 follow-on).
+- **Public player profile with match history**: a per-player page showing past tournaments, placements, and opponents. v2. The audit log is the data source; the view is not in v1.
 
 ## Out of scope
 
@@ -71,6 +75,6 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 
 - Mobile-native apps — web frontend only
 - Public cloud deployment (AWS/GCP/Azure) — local + Hetzner only
-- Multi-format brackets beyond single elimination — single elimination only for v1
+- Multi-format brackets beyond multi-player elimination — multi-player elimination only for v1
 - OAuth / social login — email + password only for v1
 - Account self-service creation — invites are manager-only by destination design
