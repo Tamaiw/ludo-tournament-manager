@@ -1,8 +1,8 @@
 # W12: Apply hexagonal architecture to backend
 
 **Type:** grilling
-**State:** open
-**Assignee:** (unclaimed)
+**State:** in-progress
+**Assignee:** opencode
 **Blocked by:** (none)
 **Blocks:** W6, W9, W10, W11
 

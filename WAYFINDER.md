@@ -34,7 +34,6 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 - [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
-- [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md) *(task, gates implementation)*
 
 ## Blocked
 
@@ -54,6 +53,7 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 - [W4: Pick frontend approach](./.wayfinder/tickets/W4-pick-frontend-approach.md): **htmx 2 + Alpine 3 + Go `html/template`** — no JS toolchain, server-rendered, bracket fits CSS-Grid + Alpine for v1 scope
 - [W5: Decide monorepo vs polyrepo](./.wayfinder/tickets/W5-decide-monorepo-vs-polyrepo.md): **Monorepo, Go in `/backend/`** — no separate frontend codebase; modular monolith (hexagonal) makes future split tractable if needed
 - [W8: Transactional email approach](./.wayfinder/tickets/W8-transactional-email-approach.md): **Resend (prod) + Mailpit (dev)** via `net/smtp` — same code path, config flip; Resend's pre-warmed shared IPs sidestep the Hetzner reputation trap
+- [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md): **All dev tools installed** (Go 1.26.8, Docker 29.8.2, VS Code + Go extension, gopls, SQLite CLI, Make); guide at [`docs/setup.md`](./docs/setup.md) — gates implementation
 
 ## Not yet specified
 

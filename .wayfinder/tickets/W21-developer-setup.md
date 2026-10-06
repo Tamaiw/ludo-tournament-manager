@@ -52,3 +52,20 @@ The deliverable lives in `docs/setup*.md`. The ticket closes with the path to th
 - Production secrets management
 - Domain / TLS provisioning for the Hetzner VPS
 - Additional MCP servers for AI agents — `codebase-memory-mcp` (structural code discovery) and `context7` (library docs) are already configured at `~/.config/opencode/` and are exactly what AI agents need on this codebase. No more are required.
+
+## Resolution
+
+**Status:** installed and verified on Linux (the user's primary dev machine). Windows commands are documented but not verified on this host.
+
+| Tool | Installed | Notes |
+|------|-----------|-------|
+| Go | 1.26.8 (linux/amd64) | `/usr/lib/golang` (system package) |
+| Docker | 29.8.2 + Compose v5.6.0 | — |
+| Git | 2.55.0 | user.name + user.email set |
+| VS Code | 1.138.0 | — |
+| Go extension | golang.go v0.56.1 | bundles gopls automatically |
+| gopls | installed at `~/go/bin/gopls` | `~/go/bin` added to `PATH` in `~/.bashrc` |
+| SQLite CLI | 3.51.2 | — |
+| Make | GNU 4.4.1 | — |
+
+Setup guide lives at [`docs/setup.md`](../../docs/setup.md) — covers Linux + Windows installs with verification steps and a repo smoke-test checklist (the smoke test itself becomes runnable once `backend/` exists, which lands when implementation begins).
