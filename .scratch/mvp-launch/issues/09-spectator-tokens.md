@@ -1,0 +1,19 @@
+# 09: Spectator tokens (issue, revoke, holder access)
+
+**What to build:** A manager of a tournament (regardless of its visibility, but most useful for `private`) can issue a Spectator Token via `POST /tournaments/{id}/spectator-tokens` with a `label` field (e.g. "for the Tuesday-night crew"). The system generates a 256-bit opaque random token, stores the SHA-256 hash in `tournament_spectator_tokens`, and returns the raw token (and a full URL `https://<host>/tournaments/{id}?spectator_token=<token>`) **once** — the manager must copy it. The token page at `GET /tournaments/{id}/spectator-tokens` lists all tokens (active and revoked) with their labels, issue/revoke timestamps, and a "Copy URL" button per active token (Alpine for the clipboard). Revocation via `POST /tournaments/{id}/spectator-tokens/{tokenID}/revoke` sets `revoked_at` and `revoked_by`; the token cannot be re-enabled. A holder of a valid (not-revoked, not-expired... actually no expiry on spectator tokens per the spec) token can access a `private` tournament's show page by appending `?spectator_token=...` to the URL; the middleware reads it from the query (or a `spectator_token` cookie set on first visit) and treats the request as authorized for read-only access. The middleware does NOT grant write access. Issue and revoke are audit-logged.
+
+**Blocked by:** 06 (Tournament settings, visibility, registration mode, show page)
+
+**Status:** ready-for-agent
+
+- [ ] `internal/core/domain/spectator_token.go` has the `SpectatorToken` struct and the URL/ID conversions (the raw token is shown once; the hash is the lookup key)
+- [ ] `internal/core/services/issue_spectator_token.go` with `Handle(ctx, IssueSpectatorTokenCmd) (rawToken, SpectatorToken, error)`: generates token, stores hash, returns raw + record. Writes audit log (`spectator_token_issued` with `before=null`, `after={label, token_id}`).
+- [ ] `internal/core/services/revoke_spectator_token.go` with `Handle(ctx, RevokeSpectatorTokenCmd)`: validates the token exists for the tournament; sets `revoked_at`, `revoked_by`; writes audit log (`spectator_token_revoked`).
+- [ ] `internal/core/services/authorize_spectator_access.go` (or fold into the visibility-check middleware): given a tournament ID and a raw token, returns true if a matching non-revoked token exists; sets a `spectator_token` cookie scoped to the tournament.
+- [ ] `internal/adapters/inbound/http/middleware/require_spectator_token.go`: for `private` tournaments, if the request has no valid session and no manager/player relationship, check for a `spectator_token` query param or cookie; if valid, allow the request through with a read-only flag in context.
+- [ ] `internal/adapters/inbound/http/handlers/tournament.go` adds `SpectatorTokensPage`, `IssueSpectatorTokenSubmit`, `RevokeSpectatorTokenSubmit`
+- [ ] `internal/adapters/inbound/http/templates/pages/tournament_spectator_tokens.html` lists tokens with copy-URL buttons (Alpine for the clipboard)
+- [ ] `internal/adapters/inbound/http/server.go` registers the new routes, with the visibility check middleware also accepting a spectator token
+- [ ] Tests at the service layer: `issue_spectator_token_test.go` (token generated, hash stored, raw returned only once, audit log written); `revoke_spectator_token_test.go` (happy path, double-revoke is a no-op or error, audit log written); `authorize_spectator_access_test.go` (valid token grants access, revoked token does not, unknown token does not)
+- [ ] Tests at the HTTP handler layer: `GET /tournaments/{id}?spectator_token=...` for a `private` tournament with a valid token returns 200; with a revoked token returns 403; without a token returns 403; the token page lists active and revoked tokens
+- [ ] Manual smoke test: create a `private` tournament, issue a token, copy the URL, open in a private browser window, see the tournament; revoke the token, refresh, see 403

@@ -1,0 +1,19 @@
+# 19: Change password (self) and manager-issued password reset
+
+**What to build:** A signed-in user can change their own password via `GET /change-password` + `POST /change-password` (form: current password, new password, confirm new password; validates current password via `PasswordHasher.Verify`, validates new password matches confirmation, hashes and updates). On success, the session is renewed (`RenewToken`) per OWASP session-management guidance (privilege change = new session ID) and the user is redirected to the dashboard with a flash. A manager can issue a password reset for any user via `POST /users/{id}/password-reset` (manager-only; the manager is acting on behalf of the user). The system generates an `auth_tokens` row with `kind=password_reset`, `email=<user's email>`, `expires_at=now+1h`, `created_by=<manager>`, and emails a link `https://<host>/password-resets/{token}` (Mailpit in dev, Resend in prod; same `EmailSender.SendPasswordReset` method added in T07's stub). The user clicks the link, lands on `GET /password-resets/{token}` (set-new-password form), submits via `POST /password-resets/{token}`, the system validates the token (not used, not expired, `kind=password_reset`), updates `users.password_hash`, marks `used_at`, signs the user in (or just shows a "password updated" page if they weren't signed in), and writes an audit log row (`password_reset_redeemed`). Reusing the token returns 410.
+
+**Blocked by:** 03 (Sign-in / sign-out)
+
+**Status:** ready-for-agent
+
+- [ ] `internal/core/services/change_password.go` with `Handle(ctx, ChangePasswordCmd)`: validates the current password, validates the new password (length, confirmation), hashes the new password, updates `users.password_hash`, calls `Sessions.RenewToken` (privilege change), writes audit log
+- [ ] `internal/core/services/request_password_reset.go` with `Handle(ctx, RequestPasswordResetCmd)`: manager-only authorization (the actor is a manager of some tournament; in v1, any manager can reset any user's password — the spec says manager-issued, not tournament-scoped); generates token, stores hash, calls `EmailSender.SendPasswordReset`
+- [ ] `internal/core/services/redeem_password_reset.go` with `Handle(ctx, RedeemPasswordResetCmd)`: validates the token (`kind=password_reset`, not used, not expired), looks up the user by `auth_tokens.email`, updates `password_hash`, marks `used_at`, writes audit log
+- [ ] `internal/adapters/outbound/smtp/email_sender.go` adds `SendPasswordReset(ctx, toEmail, resetURL, requesterName) error`
+- [ ] `internal/adapters/inbound/http/handlers/auth.go` adds `ChangePasswordPage`, `ChangePasswordSubmit`
+- [ ] `internal/adapters/inbound/http/handlers/invite.go` (or a new `password_reset.go`) adds `RedeemPasswordResetPage`, `RedeemPasswordResetSubmit`, and the manager-side `RequestPasswordResetSubmit`
+- [ ] `internal/adapters/inbound/http/templates/pages/{change_password,password_reset}.html` render the forms with `{{ .CSRFField }}`
+- [ ] `internal/adapters/inbound/http/server.go` registers the routes; the user dropdown in the header has a "Change password" link
+- [ ] Tests at the service layer: `change_password_test.go` (happy path, wrong current password, mismatch, audit log + session renew); `request_password_reset_test.go` (token generated, hash stored, email sent); `redeem_password_reset_test.go` (happy path, used token error, expired token error, wrong kind error, audit log)
+- [ ] Tests at the HTTP handler layer: full flows for change-password and password-reset, including 410 on reuse and 403 on manager-only endpoints as a non-manager
+- [ ] Manual smoke test: sign in, change password, sign in again with the new password; as manager, request a password reset for another user; check Mailpit; click the link; set a new password; sign in as that user with the new password

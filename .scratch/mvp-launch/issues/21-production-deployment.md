@@ -1,0 +1,17 @@
+# 21: Production deployment (Dockerfile, Caddyfile, docker-compose.yml, .env.example, docs/deploy.md)
+
+**What to build:** The production deployment is reproducible from a fresh VPS with `git clone` and `docker compose up -d --build`. The artefacts: (1) a multi-stage `Dockerfile` that builds the Go binary (CGO_ENABLED=0, static, with `//go:embed` for the templates), producing a final image based on `alpine` (not `scratch`, for `docker exec` debugging); (2) a `deploy/Caddyfile` that terminates HTTPS (ACME auto-cert via Caddy), redirects HTTP→HTTPS, and reverse-proxies to the `app` service; (3) a `deploy/docker-compose.yml` with two services — `app` (the static binary) and `caddy` (the reverse proxy) — sharing a `data` bind-mount (`./data:/data`) and a `.env` file; (4) the `seed` service (from T02) also defined in the same compose file; (5) a `.env.example` checked in, `.env` gitignored, with the required variables (`APP_ENV=production`, `COOKIE_SECURE=true`, `SESSION_KEY=<32 random bytes>`, `SMTP_HOST=...`, `SMTP_PORT=...`, `SMTP_USERNAME=...`, `SMTP_PASSWORD=...`, `SMTP_FROM=...`, `PUBLIC_URL=https://<host>`, `DB_PATH=/data/ludo.db`); (6) `docs/deploy.md` documenting the full first-run flow: clone → `cp .env.example .env && $EDITOR .env` → `docker compose -f deploy/docker-compose.yml run --rm --build seed --email ... --password ...` → `docker compose -f deploy/docker-compose.yml up -d --build`. The update flow is `git pull && docker compose -f deploy/docker-compose.yml up -d --build`. The dev runtime (from T01) is unchanged: `deploy/docker-compose.dev.yml` runs Mailpit only, `go run ./cmd/server` runs the Go app on the host.
+
+**Blocked by:** 16 (WebSocket hub, per-tournament rooms, Broadcaster port, htmx-on-ws bracket updates)
+
+**Status:** ready-for-agent
+
+- [ ] `deploy/Dockerfile`: multi-stage, builder uses `golang:1.26-alpine`, runs `go build -o /out/server ./cmd/server` and `go build -o /out/seed ./cmd/seed`; final image is `alpine:3.X` with the two binaries copied in, the `data` user created, `/data` as `VOLUME`, `EXPOSE 8080`, `ENTRYPOINT ["/server"]` for the `app` service and `["/seed"]` for the `seed` service
+- [ ] `deploy/Caddyfile`: `{ hosts }` block with the auto-HTTPS on, `reverse_proxy app:8080`, HTTP→HTTPS redirect; uses the `{$PUBLIC_URL}` env var
+- [ ] `deploy/docker-compose.yml`: three services (`app`, `caddy`, `seed`) sharing the image (`build: .`), the env_file (`.env`), and the bind-mount (`./data:/data`); `caddy` also mounts `./Caddyfile:/etc/caddy/Caddyfile:ro`; `app` and `seed` depend on the `data` directory existing
+- [ ] `.env.example` at the repo root: every required variable with placeholder values and a one-line comment per variable
+- [ ] `.gitignore` excludes `.env` and `data/` (the SQLite bind-mount target)
+- [ ] `docs/deploy.md`: full first-run guide, update guide, dev-loop guide, troubleshooting (cookie not set → check `COOKIE_SECURE`; email not arriving → check Mailpit; etc.)
+- [ ] `cmd/seed/main.go` (from T02) extended: reads `.env` if present (in addition to explicit flags), prints "first manager created: {email}" on success
+- [ ] Manual end-to-end test on a fresh VPS (or a Docker-based simulation): `git clone`, env, seed, `up -d --build`, sign in via the public URL over HTTPS, create a tournament, see the public page
+- [ ] Verification: the binary runs in a container with `docker exec -it <container> /bin/sh`; the SQLite file is at `/data/ludo.db` and is host-accessible at `./data/ludo.db`; Caddy issues a Let's Encrypt cert on first request
