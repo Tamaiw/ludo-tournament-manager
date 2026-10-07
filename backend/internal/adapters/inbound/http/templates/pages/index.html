@@ -1,0 +1,17 @@
+{{ define "title" }}Public tournaments — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>Public tournaments</h1>
+{{ if .Tournaments }}
+<ul>
+{{ range .Tournaments }}
+<li>
+  <a href="/tournaments/{{ .ID }}">{{ .Name }}</a>
+  <span class="pill status-{{ .Status }}">{{ .Status }}</span>
+  {{ if .Description }}<div>{{ .Description }}</div>{{ end }}
+</li>
+{{ end }}
+</ul>
+{{ else }}
+<p><em>No public tournaments yet.</em></p>
+{{ end }}
+{{ end }}

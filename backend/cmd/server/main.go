@@ -1,14 +1,8 @@
 // Command server is the Ludo Tournament Manager HTTP server.
-//
-// In T01 it only exposes GET /healthz, opens SQLite, applies migrations, and
-// exits cleanly on signal. Subsequent tickets wire the rest of the surface
-// (sign-in, tournaments, brackets, WebSocket, etc.).
 package main
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -17,15 +11,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/alexedwards/scs/v2"
-	"github.com/go-chi/chi/v5"
-
+	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/ws"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/argon2"
 	migrationspkg "github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/migrations"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/smtp"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/sqlite"
-	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/ws"
 	httpinbound "github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/http"
+	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/core/ports"
+	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/core/services"
 )
 
 func main() {
@@ -46,52 +39,69 @@ func main() {
 	repo := sqlite.NewRepos(db)
 	hasher := argon2.New()
 	email := smtp.NewSender(smtp.Config{
-		Host:     cfg.SMTPHost,
-		Port:     cfg.SMTPPort,
-		Username: cfg.SMTPUsername,
-		Password: cfg.SMTPPassword,
-		From:     cfg.SMTPFrom,
+		Host:      cfg.SMTPHost,
+		Port:      cfg.SMTPPort,
+		Username:  cfg.SMTPUsername,
+		Password:  cfg.SMTPPassword,
+		From:      cfg.SMTPFrom,
 		PublicURL: cfg.PublicURL,
 	})
 	broadcaster := ws.NewHub()
+	clock := ports.RealClock{}
 
-	// Session manager (scs) is wired against the SQLite session store.
-	sessionManager := scs.New()
-	sessionManager.Lifetime = 7 * 24 * time.Hour
-	sessionManager.IdleTimeout = 24 * time.Hour
-	sessionManager.Cookie.Name = "__Host-id"
-	sessionManager.Cookie.HttpOnly = true
-	sessionManager.Cookie.SameSite = http.SameSiteStrictMode
-	sessionManager.Cookie.Secure = cfg.CookieSecure
-	sessionManager.Cookie.Path = "/"
-	sessionManager.HashTokenInStore = true
-	sessionManager.Store = httpinbound.NewSCSStoreAdapter(repo.Sessions)
+	csrfKey := []byte(getEnv("SESSION_KEY", "01234567890123456789012345678901"))
+	if len(csrfKey) < 32 {
+		log.Fatalf("SESSION_KEY must be at least 32 bytes (got %d)", len(csrfKey))
+	}
 
-	r := chi.NewRouter()
-	r.Use(httpinbound.RequestID)
-	r.Use(httpinbound.RealIP)
-	r.Use(httpinbound.Logger)
-	r.Use(httpinbound.Recoverer)
-	r.Use(sessionManager.LoadAndSave)
-
-	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		if err := db.PingContext(r.Context()); err != nil {
-			http.Error(w, "unhealthy", http.StatusServiceUnavailable)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "ok")
+	// Build every service.
+	svc := services.New(services.BuildParams{
+		Users:               repo.Users,
+		Hasher:              hasher,
+		Clock:               clock,
+		Tournaments:         repo.Tournaments,
+		TManagers:           repo.TournamentManagers,
+		TPlayers:            repo.TournamentPlayers,
+		AuthTokens:          repo.AuthTokens,
+		SpectatorTokens:     repo.TournamentSpectatorTokens,
+		Matches:             repo.Matches,
+		MatchParts:          repo.MatchParticipants,
+		AuditLog:            repo.AuditLog,
+		Email:               email,
+		Broadcaster:         broadcaster,
+		PublicURL:           cfg.PublicURL,
 	})
 
-	srv := &http.Server{
+	srv := httpinbound.New(httpinbound.Config{
+		Users:              repo.Users,
+		Tournaments:        repo.Tournaments,
+		TournamentManagers: repo.TournamentManagers,
+		TournamentPlayers:  repo.TournamentPlayers,
+		SpectatorTokens:    repo.TournamentSpectatorTokens,
+		Matches:            repo.Matches,
+		AuditLog:           repo.AuditLog,
+		AuthTokens:         repo.AuthTokens,
+		Email:              email,
+		Broadcaster:        broadcaster,
+		Clock:              clock,
+		Hasher:             hasher,
+		Tx:                 repo.Tx,
+		SessionStore:       repo.Sessions,
+		CSRFKey:            csrfKey,
+		CookieSecure:       cfg.CookieSecure,
+		PublicURL:          cfg.PublicURL,
+		Services:           svc,
+	})
+
+	httpServer := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           r,
+		Handler:           srv.Routes(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
 		log.Printf("listening on :%s", cfg.Port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %v", err)
 		}
 	}()
@@ -102,27 +112,20 @@ func main() {
 	log.Println("shutting down")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Printf("shutdown error: %v", err)
-	}
-
-	_ = repo
-	_ = hasher
-	_ = email
-	_ = broadcaster
+	_ = httpServer.Shutdown(shutdownCtx)
 }
 
 type config struct {
-	AppEnv        string
-	DBPath        string
-	Port          string
-	CookieSecure  bool
-	SMTPHost      string
-	SMTPPort      int
-	SMTPUsername  string
-	SMTPPassword  string
-	SMTPFrom      string
-	PublicURL     string
+	AppEnv       string
+	DBPath       string
+	Port         string
+	CookieSecure bool
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+	SMTPFrom     string
+	PublicURL    string
 }
 
 func loadConfig() config {
@@ -156,6 +159,3 @@ func getEnvInt(key string, def int) int {
 	}
 	return def
 }
-
-// Mark a few variables that lint wants used (referenced from main indirectly).
-var _ = sql.ErrNoRows

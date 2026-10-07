@@ -1,0 +1,17 @@
+{{ define "header" }}
+<header>
+  <nav>
+    <a href="/" style="font-weight:bold">Ludo Tournament Manager</a>
+    {{ if .User }}
+      | <a href="/dashboard">Dashboard</a>
+      | Signed in as {{ .User.Name }} ({{ .User.Email }})
+      <form method="POST" action="/sign-out" class="inline">
+        {{ .CSRFField }}
+        <button type="submit" class="button secondary">Sign out</button>
+      </form>
+    {{ else }}
+      | <a href="/sign-in">Sign in</a>
+    {{ end }}
+  </nav>
+</header>
+{{ end }}

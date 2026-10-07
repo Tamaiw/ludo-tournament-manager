@@ -1,0 +1,22 @@
+{{ define "title" }}Audit log — {{ .Tournament.Name }}{{ end }}
+{{ define "content" }}
+<h1>Audit log</h1>
+<table>
+<tr><th>When</th><th>Actor</th><th>Action</th><th>Subject</th><th>Diff</th></tr>
+{{ range .AuditEntries }}
+<tr x-data="{ open: false }">
+  <td>{{ .RecordedAt.Format "2006-01-02 15:04:05" }}</td>
+  <td>{{ if .ActorID }}{{ .ActorID }}{{ else }}-{{ end }}</td>
+  <td>{{ .Action }}</td>
+  <td>{{ .SubjectID }}</td>
+  <td>
+    <button @click="open = !open" class="button secondary">Toggle diff</button>
+    <details x-show="open">
+      <pre>before: {{ .Before }}
+after:  {{ .After }}</pre>
+    </details>
+  </td>
+</tr>
+{{ end }}
+</table>
+{{ end }}

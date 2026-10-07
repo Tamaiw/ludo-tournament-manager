@@ -1,0 +1,12 @@
+{{ define "title" }}Sign in — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>Sign in</h1>
+{{ if .Error }}<div class="flash error">{{ .Error }}</div>{{ end }}
+<form method="POST" action="/sign-in">
+  {{ .CSRFField }}
+  <label>Email <input type="email" name="email" required autofocus></label>
+  <label>Password <input type="password" name="password" required></label>
+  <button type="submit" class="button">Sign in</button>
+</form>
+<p><a href="/">← Public tournament index</a></p>
+{{ end }}

@@ -1,0 +1,37 @@
+{{ define "title" }}Match {{ index .Matches 0 }}{{ end }}
+{{ define "content" }}
+<h1>Match</h1>
+{{ $m := index .Matches 0 }}
+<p>Round {{ $m.Round }} position {{ $m.PositionInRound }} — status: <span class="pill">{{ $m.Status }}</span></p>
+<h3>Slots</h3>
+{{ range index .Participants $m.ID }}
+<p>{{ .Slot }}: {{ if .IsBye }}BYE{{ else }}{{ .PlayerID }}{{ end }}{{ if .AdvancingPosition }} → position {{ .AdvancingPosition }}{{ end }}</p>
+{{ end }}
+
+<h3>Actions</h3>
+{{ if eq $m.Status "pending" "ready" }}
+<form method="POST" action="/matches/{{ $m.ID }}/start">
+  {{ .CSRFField }}<button class="button">Mark in progress</button>
+</form>
+{{ end }}
+{{ if eq $m.Status "in_progress" }}
+<form method="POST" action="/matches/{{ $m.ID }}/record">
+  {{ .CSRFField }}
+  <label>home advancing position <input type="number" name="home" min="1" max="4"></label>
+  <label>away advancing position <input type="number" name="away" min="1" max="4"></label>
+  <label>third advancing position <input type="number" name="third" min="1" max="4"></label>
+  <label>fourth advancing position <input type="number" name="fourth" min="1" max="4"></label>
+  <button class="button">Record result</button>
+</form>
+{{ end }}
+{{ if eq $m.Status "completed" }}
+<form method="POST" action="/matches/{{ $m.ID }}/correct">
+  {{ .CSRFField }}
+  <label>home <input type="number" name="home" min="1" max="4"></label>
+  <label>away <input type="number" name="away" min="1" max="4"></label>
+  <label>third <input type="number" name="third" min="1" max="4"></label>
+  <label>fourth <input type="number" name="fourth" min="1" max="4"></label>
+  <button class="button">Correct result (manager)</button>
+</form>
+{{ end }}
+{{ end }}

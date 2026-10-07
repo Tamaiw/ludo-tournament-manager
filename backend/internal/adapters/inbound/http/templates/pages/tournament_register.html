@@ -1,0 +1,9 @@
+{{ define "title" }}Register — {{ .Tournament.Name }}{{ end }}
+{{ define "content" }}
+<h1>Register for {{ .Tournament.Name }}</h1>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/register">
+  {{ .CSRFField }}
+  <p>You are signed in as {{ .User.Email }}.</p>
+  <button class="button">Join tournament</button>
+</form>
+{{ end }}

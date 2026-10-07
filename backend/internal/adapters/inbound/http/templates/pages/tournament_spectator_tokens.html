@@ -1,0 +1,45 @@
+{{ define "title" }}Spectator tokens — {{ .Tournament.Name }}{{ end }}
+{{ define "content" }}
+<h1>Spectator tokens</h1>
+{{ if .TokenURL }}
+<div class="flash success">New token URL: <code>{{ .TokenURL }}</code> — copy it now; it won't be shown again.</div>
+{{ end }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/spectator-tokens">
+  {{ .CSRFField }}
+  <label>Label <input type="text" name="label" placeholder="for the Tuesday-night crew"></label>
+  <button class="button">Issue token</button>
+</form>
+
+<h3>Active tokens</h3>
+<table>
+<tr><th>Label</th><th>Issued</th><th>URL</th><th>Action</th></tr>
+{{ range .SpectatorTokens }}
+{{ if not .RevokedAt }}
+<tr>
+  <td>{{ .Label }}</td>
+  <td>{{ .IssuedAt.Format "2006-01-02 15:04" }}</td>
+  <td><code>https://&lt;host&gt;/tournaments/{{ $.Tournament.ID }}?spectator_token=&lt;raw&gt;</code></td>
+  <td>
+    <form method="POST" action="/tournaments/{{ $.Tournament.ID }}/spectator-tokens/{{ .ID }}/revoke" class="inline">
+      {{ $.CSRFField }}<button class="button danger">Revoke</button>
+    </form>
+  </td>
+</tr>
+{{ end }}
+{{ end }}
+</table>
+
+<h3>Revoked tokens</h3>
+<table>
+<tr><th>Label</th><th>Issued</th><th>Revoked</th></tr>
+{{ range .SpectatorTokens }}
+{{ if .RevokedAt }}
+<tr>
+  <td>{{ .Label }}</td>
+  <td>{{ .IssuedAt.Format "2006-01-02 15:04" }}</td>
+  <td>{{ .RevokedAt.Format "2006-01-02 15:04" }}</td>
+</tr>
+{{ end }}
+{{ end }}
+</table>
+{{ end }}

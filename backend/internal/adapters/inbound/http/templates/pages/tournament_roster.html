@@ -1,0 +1,38 @@
+{{ define "title" }}Roster — {{ .Tournament.Name }}{{ end }}
+{{ define "content" }}
+<h1>Roster — {{ .Tournament.Name }}</h1>
+<p>{{ len .Roster }} players registered.</p>
+<table>
+<tr><th>Player</th><th>Email</th><th>Registered</th><th>Seed</th><th>Actions</th></tr>
+{{ range .Roster }}
+<tr>
+  <td>{{ .PlayerID }}</td>
+  <td>—</td>
+  <td>{{ .RegisteredAt.Format "2006-01-02 15:04" }}</td>
+  <td>{{ if .Seed }}{{ .Seed }}{{ else }}—{{ end }}</td>
+  <td>
+    <form method="POST" action="/tournaments/{{ $.Tournament.ID }}/roster/{{ .PlayerID }}/withdraw" class="inline">
+      {{ $.CSRFField }}<button class="button secondary">Withdraw</button>
+    </form>
+    <form method="POST" action="/tournaments/{{ $.Tournament.ID }}/roster/{{ .PlayerID }}/seed" class="inline">
+      {{ $.CSRFField }}<input type="number" name="seed" min="1" value="{{ if .Seed }}{{ .Seed }}{{ end }}" style="width:5em"><button class="button">Set seed</button>
+    </form>
+  </td>
+</tr>
+{{ end }}
+</table>
+
+<h3>Add player</h3>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/roster/add">
+  {{ .CSRFField }}
+  <label>User ID <input type="text" name="user_id" required></label>
+  <button class="button">Add</button>
+</form>
+
+<h3>Invite a new user</h3>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/roster/invite">
+  {{ .CSRFField }}
+  <label>Email <input type="email" name="email" required></label>
+  <button class="button">Send invite</button>
+</form>
+{{ end }}

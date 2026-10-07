@@ -1,0 +1,10 @@
+{{ define "content" }}
+<h3>Bracket preview</h3>
+{{ if .Bracket }}
+{{ range .Bracket.Rounds }}
+<p>Round {{ .Round }}: {{ .Matches }} matches, {{ .PlayersIn }} players — {{ .Description }}</p>
+{{ end }}
+{{ else }}
+<p><em>No bracket available.</em></p>
+{{ end }}
+{{ end }}

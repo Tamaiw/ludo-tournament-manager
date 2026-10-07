@@ -66,6 +66,12 @@ type MatchRepository interface {
 	GetUpstreamMatches(ctx context.Context, matchID domain.MatchID) ([]domain.Match, error)
 }
 
+// MatchParticipantRepository persists match_participants rows.
+type MatchParticipantRepository interface {
+	InsertBatch(ctx context.Context, parts []domain.MatchParticipant) error
+	RemoveAllForMatch(ctx context.Context, mid domain.MatchID) error
+}
+
 // AuditLogRepository persists tournament audit log rows.
 type AuditLogRepository interface {
 	Insert(ctx context.Context, entry domain.AuditLogEntry) error

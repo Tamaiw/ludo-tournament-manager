@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ block "title" . }}Ludo Tournament Manager{{ end }}</title>
+<script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+<script src="https://unpkg.com/alpinejs@3.14.1" defer></script>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 1em auto; padding: 0 1em; }
+  header { border-bottom: 1px solid #ddd; padding-bottom: .5em; margin-bottom: 1em; }
+  nav a { margin-right: .5em; }
+  .flash { padding: .5em 1em; margin-bottom: 1em; border-radius: 4px; }
+  .flash.info    { background: #eef; }
+  .flash.error   { background: #fee; }
+  .flash.warning { background: #ffe; }
+  .flash.success { background: #efe; }
+  .pill { display: inline-block; padding: .15em .5em; border-radius: 1em; font-size: .85em; background: #eee; }
+  .pill.status-draft { background: #ddd; }
+  .pill.status-registration_open { background: #cfe; }
+  .pill.status-in_progress { background: #efd; }
+  .pill.status-completed { background: #eee; }
+  .pill.status-cancelled { background: #fdd; }
+  .pill.visibility-public { background: #efe; }
+  .pill.visibility-unlisted { background: #ffe; }
+  .pill.visibility-private { background: #fde; }
+  form.inline { display: inline; }
+  input, select, textarea { display: block; margin: .25em 0; padding: .25em; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid #eee; padding: .35em; text-align: left; vertical-align: top; }
+  .button { display: inline-block; padding: .35em 1em; background: #3a7; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
+  .button.secondary { background: #777; }
+  .button.danger { background: #a55; }
+  details pre { background: #f6f6f6; padding: .5em; }
+  .bracket { display: grid; gap: 1em; overflow-x: auto; }
+  .bracket .round { display: flex; flex-direction: column; gap: 1em; }
+  .bracket .round h3 { text-align: center; margin: 0; }
+  .bracket .match { border: 1px solid #aaa; padding: .5em; border-radius: 4px; min-width: 200px; background: #fafafa; }
+  .bracket .match.completed { background: #efe; }
+  .bracket .match.in_progress { background: #ffd; border-color: #c80; }
+  .bracket .match.ready { background: #eef; }
+  .bracket .slot { font-size: .85em; }
+</style>
+</head>
+<body>
+{{ template "header" . }}
+<main>
+  {{ if .Flash }}
+  <div class="flash {{ .Flash.Level }}">{{ .Flash.Message }}</div>
+  {{ end }}
+  {{ block "content" . }}{{ end }}
+</main>
+</body>
+</html>

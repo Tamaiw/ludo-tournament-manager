@@ -1,0 +1,30 @@
+{{ define "title" }}Dashboard — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>Welcome, {{ .User.Name }}</h1>
+<p>Email: {{ .User.Email }}</p>
+
+<h2>Your tournaments</h2>
+{{ if .Managed }}
+<h3>You manage</h3>
+<ul>
+  {{ range .Managed }}
+  <li><a href="/tournaments/{{ .ID }}">{{ .Name }}</a> <span class="pill status-{{ .Status }}">{{ .Status }}</span> <span class="pill visibility-{{ .Visibility }}">{{ .Visibility }}</span></li>
+  {{ else }}
+  <li><em>None yet.</em></li>
+  {{ end }}
+</ul>
+{{ end }}
+
+{{ if .Playing }}
+<h3>You play in</h3>
+<ul>
+  {{ range .Playing }}
+  <li><a href="/tournaments/{{ .ID }}">{{ .Name }}</a> <span class="pill status-{{ .Status }}">{{ .Status }}</span></li>
+  {{ else }}
+  <li><em>None.</em></li>
+  {{ end }}
+</ul>
+{{ end }}
+
+<p><a class="button" href="/tournaments/new">Create a new tournament</a></p>
+{{ end }}

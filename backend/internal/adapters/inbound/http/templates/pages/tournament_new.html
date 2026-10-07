@@ -1,0 +1,28 @@
+{{ define "title" }}New tournament — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>New tournament</h1>
+{{ if .Error }}<div class="flash error">{{ .Error }}</div>{{ end }}
+<form method="POST" action="/tournaments">
+  {{ .CSRFField }}
+  <label>Name <input type="text" name="name" required maxlength="120" autofocus></label>
+  <label>Description <textarea name="description" rows="4"></textarea></label>
+  <label>Visibility
+    <select name="visibility">
+      <option value="private" selected>Private (only managers and invited players)</option>
+      <option value="unlisted">Unlisted (URL only)</option>
+      <option value="public">Public (listed in index)</option>
+    </select>
+  </label>
+  <label>Registration mode
+    <select name="registration_mode">
+      <option value="invite_only" selected>Invite only</option>
+      <option value="self_register">Self-register</option>
+    </select>
+  </label>
+  <label>Min players per match <input type="number" name="min_players_per_match" value="2" min="2" max="4"></label>
+  <label>Max players per match <input type="number" name="max_players_per_match" value="4" min="2" max="4"></label>
+  <label>Max players (0 = unlimited) <input type="number" name="max_players" value="0" min="0"></label>
+  <label>Advance map JSON (e.g. {"1":2,"2":2}) <input type="text" name="advance_map_json" value='{"1":1,"2":1}'></label>
+  <button type="submit" class="button">Create tournament</button>
+</form>
+{{ end }}

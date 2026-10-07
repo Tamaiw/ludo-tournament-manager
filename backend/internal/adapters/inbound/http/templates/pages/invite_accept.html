@@ -1,0 +1,11 @@
+{{ define "title" }}Accept invite — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>Accept invite</h1>
+{{ if .Error }}<div class="flash error">{{ .Error }}</div>{{ end }}
+<form method="POST" action="/invites/{{ .Token }}">
+  {{ .CSRFField }}
+  <label>Display name <input type="text" name="name" required autofocus></label>
+  <label>Password <input type="password" name="password" required minlength="8"></label>
+  <button class="button">Set password and sign in</button>
+</form>
+{{ end }}

@@ -1,0 +1,19 @@
+{{ define "content" }}
+<div class="bracket">
+{{ if .Matches }}
+  {{ range .Matches }}
+  <div class="match status-{{ .Status }}">
+    <strong>Round {{ .Round }} Match {{ .PositionInRound }}</strong>
+    <span class="pill">{{ .Status }}</span>
+    {{ with index $.Participants .ID }}
+      {{ range . }}
+      <div class="slot">{{ .Slot }}{{ if .PlayerID }}: {{ .PlayerID }}{{ end }}{{ if .IsBye }} (bye){{ end }}{{ with .AdvancingPosition }} → pos {{ . }}{{ end }}</div>
+      {{ end }}
+    {{ end }}
+  </div>
+  {{ end }}
+{{ else }}
+  <p><em>Bracket not yet generated. Start the tournament to populate.</em></p>
+{{ end }}
+</div>
+{{ end }}

@@ -1,0 +1,38 @@
+{{ define "title" }}Edit {{ .Tournament.Name }}{{ end }}
+{{ define "content" }}
+<h1>Edit {{ .Tournament.Name }}</h1>
+{{ if .Error }}<div class="flash error">{{ .Error }}</div>{{ end }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/edit">
+  {{ .CSRFField }}
+  <label>Name <input type="text" name="name" value="{{ .Tournament.Name }}" required></label>
+  <label>Description <textarea name="description" rows="4">{{ .Tournament.Description }}</textarea></label>
+  <label>Min per match <input type="number" name="min_players_per_match" value="{{ .Tournament.MinPlayersPerMatch }}" min="2" max="4"></label>
+  <label>Max per match <input type="number" name="max_players_per_match" value="{{ .Tournament.MaxPlayersPerMatch }}" min="2" max="4"></label>
+  <label>Advance map JSON <input type="text" name="advance_map_json" value='{"1":1,"2":1}'></label>
+  <button type="submit" class="button">Save</button>
+</form>
+
+<h3>Visibility</h3>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/visibility">
+  {{ .CSRFField }}
+  <label><input type="radio" name="visibility" value="public" {{ if eq .Tournament.Visibility "public" }}checked{{ end }}> Public</label>
+  <label><input type="radio" name="visibility" value="unlisted" {{ if eq .Tournament.Visibility "unlisted" }}checked{{ end }}> Unlisted</label>
+  <label><input type="radio" name="visibility" value="private" {{ if eq .Tournament.Visibility "private" }}checked{{ end }}> Private</label>
+  <button class="button secondary">Update visibility</button>
+</form>
+
+<h3>Registration mode</h3>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/registration-mode">
+  {{ .CSRFField }}
+  <label><input type="radio" name="registration_mode" value="invite_only" {{ if eq .Tournament.RegistrationMode "invite_only" }}checked{{ end }}> Invite only</label>
+  <label><input type="radio" name="registration_mode" value="self_register" {{ if eq .Tournament.RegistrationMode "self_register" }}checked{{ end }}> Self-register</label>
+  <button class="button secondary">Update mode</button>
+</form>
+
+{{ if or (eq .Tournament.Status "draft") (eq .Tournament.Status "registration_open") }}
+<h3>Preview bracket</h3>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/preview-bracket">
+  {{ .CSRFField }}<button class="button">Preview</button>
+</form>
+{{ end }}
+{{ end }}

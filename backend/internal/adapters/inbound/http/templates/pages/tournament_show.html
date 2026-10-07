@@ -1,0 +1,57 @@
+{{ define "title" }}{{ .Tournament.Name }} — Ludo Tournament Manager{{ end }}
+{{ define "content" }}
+<h1>{{ .Tournament.Name }} <span class="pill status-{{ .Tournament.Status }}">{{ .Tournament.Status }}</span> <span class="pill visibility-{{ .Tournament.Visibility }}">{{ .Tournament.Visibility }}</span></h1>
+{{ if .Tournament.Description }}<p>{{ .Tournament.Description }}</p>{{ end }}
+
+<section hx-ext="ws" ws-connect="/ws/tournaments/{{ .Tournament.ID }}" hx-trigger="ws:message from:body">
+  <h2>Bracket</h2>
+  <div id="bracket-fragment"
+       hx-get="/fragments/tournaments/{{ .Tournament.ID }}/bracket"
+       hx-trigger="load delay:50ms"
+       hx-swap="outerHTML"
+       hx-on::ws-message="document.getElementById('bracket-fragment').dispatchEvent(new Event('load', {bubbles:true}))">
+    Loading bracket…
+  </div>
+</section>
+
+{{ if and (eq (printf "%v" (.User)) "<nil>") (ne .Tournament.Visibility "private") }}
+  {{/* anonymous user — show read-only view */}}
+{{ end }}
+
+{{ if .User }}
+<h3>Settings</h3>
+{{ if eq (printf "%v" (.User.ID)) "" }}{{/* placeholder */}}{{ end }}
+<ul>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/roster">Roster</a></li>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/audit">Audit log</a></li>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/spectator-tokens">Spectator tokens</a></li>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/edit">Edit</a></li>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/download.csv">Download CSV</a></li>
+  <li><a href="/tournaments/{{ .Tournament.ID }}/download.png">Download PNG</a></li>
+</ul>
+{{ end }}
+
+{{ if .User }}
+{{ if eq .Tournament.Status "draft" }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/open-registration">
+  {{ .CSRFField }}<button class="button">Open registration</button>
+</form>
+{{ else if eq .Tournament.Status "registration_open" }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/close-registration">
+  {{ .CSRFField }}<button class="button secondary">Close registration</button>
+</form>
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/start">
+  {{ .CSRFField }}<button class="button">Start tournament</button>
+</form>
+{{ else if eq .Tournament.Status "in_progress" }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/force-close">
+  {{ .CSRFField }}<button class="button danger">Force close</button>
+</form>
+{{ end }}
+{{ if or (eq .Tournament.Status "draft") (eq .Tournament.Status "registration_open") }}
+<form method="POST" action="/tournaments/{{ .Tournament.ID }}/cancel">
+  {{ .CSRFField }}<button class="button danger">Cancel tournament</button>
+</form>
+{{ end }}
+{{ end }}
+{{ end }}
