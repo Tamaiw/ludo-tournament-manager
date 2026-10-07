@@ -4,7 +4,7 @@ This document describes the core entities of the Ludo Tournament Manager and how
 
 ## Scope
 
-The domain model covers Tournament, Bracket, Match, and the recording workflow. User, Manager, Player, Spectator, and Invite are not detailed here — they are covered in the auth/onboarding tickets (W7, W10).
+The domain model covers Tournament, Bracket, Match, and the recording workflow. User, Manager, Player, Spectator, Visibility, Registration Mode, Spectator Token, and Invite are not detailed here — they are covered in [`./permissions.md`](./permissions.md) and the auth/onboarding tickets (W10).
 
 ---
 
@@ -57,6 +57,23 @@ A tournament can have multiple managers, each with full control. The creator is 
 | `added_at` | timestamp | |
 
 All managers are equal. There is no role differentiation in v1.
+
+### Tournament Spectator Token
+
+A revocable token that grants read-only access to a `private` tournament to anyone who holds the value, regardless of whether they have an account. Issued by a Manager; tokens are independent of the user account system.
+
+| Field | Type | Notes |
+|------|------|-------|
+| `id` | UUID | PK |
+| `tournament_id` | FK | |
+| `token_hash` | bytes | Hashed token; the plaintext is shown to the Manager once at issue and never stored |
+| `label` | string | Manager-supplied hint (e.g. "for the Tuesday-night crew"); not unique |
+| `issued_at` | timestamp | |
+| `issued_by` | FK → User | Manager who issued it |
+| `revoked_at` | timestamp | Nullable; set when the Manager revokes |
+| `revoked_by` | FK → User | Nullable |
+
+A Manager can issue unlimited spectator tokens for a tournament and revoke them individually. Revoked tokens cannot be re-enabled; a new token must be generated. Issue and revoke are recorded in the Tournament Audit Log.
 
 ### Tournament Player (registration)
 
@@ -137,7 +154,7 @@ A record of state-changing actions on a tournament. Used both for manager audit 
 | `id` | UUID | PK |
 | `tournament_id` | FK | |
 | `actor_id` | FK → User | Who performed the action |
-| `action` | enum | `seed_changed / manager_added / manager_removed / registration_opened / registration_closed / tournament_started / match_result_recorded / match_result_corrected / tournament_cancelled / tournament_completed` |
+| `action` | enum | `seed_changed / manager_added / manager_removed / registration_opened / registration_closed / registration_mode_changed / visibility_changed / spectator_token_issued / spectator_token_revoked / tournament_started / match_result_recorded / match_result_corrected / tournament_cancelled / tournament_completed` |
 | `subject_id` | FK | Polymorphic; the match / player / manager being acted on |
 | `before` | json | Snapshot of the subject before the action (nullable) |
 | `after` | json | Snapshot of the subject after the action (nullable) |

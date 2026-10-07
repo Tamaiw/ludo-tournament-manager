@@ -17,8 +17,31 @@ A user who has registered for a specific tournament and competes in its bracket.
 _Avoid_: Participant, contestant, competitor
 
 **Spectator**:
-Anyone viewing a tournament. Spectators do not need an account; they have read-only access to bracket state, results, and standings.
+Anyone viewing a tournament. Spectators do not need an account; they have read-only access to bracket state, results, and standings. What a spectator can *reach* depends on the tournament's visibility (see below).
 _Avoid_: Viewer, observer
+
+**Tournament Visibility**:
+A tournament's discoverability setting, chosen by a Manager. One of three tiers:
+
+- `public` — listed on the public tournaments index; viewable by anyone (logged in or not).
+- `unlisted` — not listed, but anyone with the URL can view (logged in or not).
+- `private` — only managers, players, and holders of a Spectator Token can view.
+
+Visibility can be edited at any time by a Manager; transitions are recorded in the Tournament Audit Log. See [ADR 0003](../docs/adr/0003-tournament-visibility-tiers.md) for why three tiers and not two.
+_Avoid_: Privacy setting, access level — "visibility" is the canonical term
+
+**Spectator Token**:
+A per-tournament, revocable token that grants read-only access to a `private` tournament. Issued and revoked by a Manager; can be shared via a URL or copied value. Tokens are independent of the user account system: they have no associated user. Audit-logged on issue and revoke.
+_Avoid_: Spectator pass, viewer key
+
+**Registration Mode**:
+A tournament's player-onboarding mode, chosen by a Manager at creation (editable while `draft` or `registration_open`):
+
+- `invite_only` — only managers can add players. The Manager may either add by user id, or send a platform invite that auto-adds the new user to the roster when accepted.
+- `self_register` — any authenticated user can register themselves, subject to `max_players` and the `registration_open` state. Managers retain the ability to remove players.
+
+Distinct from Visibility: a `public self_register` tournament is openly joinable; a `private invite_only` tournament is hidden and manager-curated.
+_Avoid_: Join mode, signup mode
 
 **Match**:
 A single Ludo game within a tournament. Has 2 to 4 participants, a status, and a recorded outcome that advances the bracket. Each Ludo game is played on a physical board; the app records the outcome, it does not run the game.
