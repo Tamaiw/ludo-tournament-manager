@@ -3,8 +3,8 @@
 **Type:** grilling
 **State:** open
 **Assignee:** (unclaimed)
-**Blocked by:** W3 ✓
-**Blocks:** W11
+**Blocked by:** W3 ✓, W11 ✓
+**Blocks:** (none — implementation feeds directly)
 
 ## Question
 
@@ -17,6 +17,10 @@ How is the SQLite database backed up on the deployment box, and how is it restor
 - **Mechanism**: `sqlite3 .backup` (online, safe under WAL), `VACUUM INTO` (compacted copy), or filesystem-level copy of the SQLite file while the app holds a lock
 - **Restore procedure**: a one-command documented restore; covers both "restore yesterday's file" and "restore from 3 weeks ago via Litestream replay"
 - **Retention**: how many backups, how long
+
+## Scope tightened by W11
+
+W11 (deployment shape) locks the SQLite file as a host bind-mount at `./data:/data`. Backups therefore run as **host-side tooling** (cron / Litestream / `restic` against `./data/ludo.db`), not as a container or another compose service. The host has the file; the `app` and `seed` services share it; the backup job is just another cron on the same box. This narrows the "mechanism" choice to host-side options and removes the `docker cp` / `docker run --rm -v ...` indirection from consideration.
 
 ## Constraints
 

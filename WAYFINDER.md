@@ -31,9 +31,6 @@ A working MVP for a Ludo tournament manager (Go backend + web frontend), contain
 
 Open, unblocked tickets, ready for a session to claim. Each is the body of `.wayfinder/tickets/<id>-*.md`.
 
-- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md) *(research)*
-- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) *(research)*
-- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) *(grilling)*
 - [W19: Backup strategy for SQLite](./.wayfinder/tickets/W19-backup-strategy.md) *(grilling)*
 - [W20: Decide real-time scope](./.wayfinder/tickets/W20-real-time-scope.md) *(grilling)*
 
@@ -41,11 +38,14 @@ Open, unblocked tickets, ready for a session to claim. Each is the body of `.way
 
 Open tickets, waiting on the frontier. Discovered by the dependency graph; close after resolve.
 
-- [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) *(blocked by W6)* — W6 closed, blocker cleared, ticket ready to claim
+(none currently)
 
 ## Recently closed
 
 - [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md) — domain model in [`docs/domain-model.md`](./docs/domain-model.md); bracket representation decision in [ADR 0002](./docs/adr/0002-bracket-representation.md); glossary updated in [`CONTEXT.md`](./CONTEXT.md)
+- [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md) — full role × action matrix in [`docs/permissions.md`](./docs/permissions.md); three-tier visibility decision in [ADR 0003](./docs/adr/0003-tournament-visibility-tiers.md); new glossary terms (Tournament Visibility, Registration Mode, Spectator Token) in [`CONTEXT.md`](./CONTEXT.md); schema additions (visibility enum, registration_mode enum, tournament_spectator_tokens entity) in [`docs/domain-model.md`](./docs/domain-model.md)
+- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md) — `alexedwards/scs/v2` for sessions + `gorilla/csrf` for CSRF + `argon2id` (golang.org/x/crypto/argon2) for passwords + opaque random + DB-hash for invite/reset tokens (one `auth_tokens` table) + Chi `r.With(...)` per-tournament role middleware; full evaluation in [`research/W10-auth-stack.md`](./research/W10-auth-stack.md)
+- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md) — **compose-everywhere with split dev runtime**: docker compose for state in dev (Go on host via `go run ./cmd/server`); full `app + caddy` stack in compose in prod; single static binary in `alpine`; Caddyfile for HTTPS termination; SQLite bind-mounted at `./data:/data`; `cmd/seed/main.go` invoked via `docker compose run --rm seed --email ... --password ...` for first-time bootstrap; `git pull && docker compose up -d --build` for updates; shape in [`deploy/`](./deploy/) (to be created during implementation), ADR [`0004`](./docs/adr/0004-deployment-shape.md); tightens W19 to host-side backup tooling
 
 ## Decisions so far
 
@@ -57,7 +57,11 @@ Open tickets, waiting on the frontier. Discovered by the dependency graph; close
 - [W8: Transactional email approach](./.wayfinder/tickets/W8-transactional-email-approach.md): **Resend (prod) + Mailpit (dev)** via `net/smtp` — same code path, config flip; Resend's pre-warmed shared IPs sidestep the Hetzner reputation trap
 - [W12: Apply hexagonal architecture to backend](./.wayfinder/tickets/W12-apply-hexagonal-architecture.md): **Hexagonal (ports & adapters)** — `internal/core/{domain,ports,services}` + `internal/adapters/{inbound,outbound}`, composition root in `cmd/server/main.go`; full layout at [`docs/architecture/hexagonal.md`](./docs/architecture/hexagonal.md), ADR [`0001`](./docs/adr/0001-hexagonal-backend.md)
 - [W6: Sketch core domain model](./.wayfinder/tickets/W6-sketch-core-domain-model.md): **Multi-player elimination, adjacency-list bracket** — 2-4 player matches, manager-configurable per-round advance count, 4-player final; model in [`docs/domain-model.md`](./docs/domain-model.md), ADR [`0002`](./docs/adr/0002-bracket-representation.md), glossary in [`CONTEXT.md`](./CONTEXT.md)
+- [W7: User roles + permissions matrix](./.wayfinder/tickets/W7-user-roles-permissions-matrix.md): **Manager-as-Player allowed; three-tier visibility (public/unlisted/private); per-tournament registration_mode (invite_only/self_register); single-recorder match outcome; manager-only self-removal via cancel** — full matrix in [`docs/permissions.md`](./docs/permissions.md), ADR [`0003`](./docs/adr/0003-tournament-visibility-tiers.md), glossary + schema updates in [`CONTEXT.md`](./CONTEXT.md) and [`docs/domain-model.md`](./docs/domain-model.md)
+- [W9: Pick Go data-access layer](./.wayfinder/tickets/W9-pick-go-data-access-layer.md): **sqlc** (SQL-first, type-safe Go from raw SQL; SQLite support beta — risk mitigated by `database/sql` escape hatch inside the adapter) — full evaluation in [`research/W9-data-access-layer.md`](./research/W9-data-access-layer.md)
+- [W10: Pick session / auth middleware stack](./.wayfinder/tickets/W10-pick-auth-stack.md): **`alexedwards/scs/v2` (sessions) + `gorilla/csrf` (CSRF) + `argon2id` via `golang.org/x/crypto/argon2` (passwords, PHC format, OWASP m=19456,t=3,p=1) + opaque random + DB-hash invite/reset tokens (one `auth_tokens` table, `kind` enum) + `r.With(...)` per-tournament role middleware** — full evaluation in [`research/W10-auth-stack.md`](./research/W10-auth-stack.md)
 - [W21: Set up developer environment](./.wayfinder/tickets/W21-developer-setup.md): **All dev tools installed** (Go 1.26.8, Docker 29.8.2, VS Code + Go extension, gopls, SQLite CLI, Make); guide at [`docs/setup.md`](./docs/setup.md) — gates implementation
+- [W11: Decide deployment shape](./.wayfinder/tickets/W11-decide-deployment-shape.md): **Compose-everywhere with split dev runtime** — `docker compose -f deploy/docker-compose.dev.yml up -d` for Mailpit in dev (Go on host via `go run ./cmd/server`); `docker compose -f deploy/docker-compose.yml up -d` for `app + caddy` in prod; single static binary in `alpine` (multi-stage `Dockerfile`); Caddyfile for ACME HTTPS termination; SQLite bind-mounted at `./data:/data`; `cmd/seed/main.go` invoked via `docker compose run --rm seed --email ... --password ...` for first-time bootstrap; `git pull && docker compose up -d --build` for updates; ADR [`0004`](./docs/adr/0004-deployment-shape.md). Tightens W19 to host-side backup tooling (cron / Litestream against `./data/ludo.db`).
 
 ## Not yet specified
 
