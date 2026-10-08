@@ -55,11 +55,7 @@ func (h *AuthHandler) SignInSubmit(w http.ResponseWriter, r *http.Request) {
 	_ = sm.RenewToken(r.Context())
 	sm.Put(r.Context(), "user_id", string(u.ID))
 	putFlash(sm, r, "success", "Signed in.")
-	// Force the session commit before we redirect, so the new Set-Cookie is
-	// in the response. scs's LoadAndSave middleware will still commit, but we
-	// want this to be visible immediately to browsers and curl.
-	w.Header().Set("Location", "/dashboard")
-	w.WriteHeader(http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 // SignOutSubmit handles POST /sign-out.
