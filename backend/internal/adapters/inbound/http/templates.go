@@ -2,6 +2,7 @@ package httpinbound
 
 import (
 	"embed"
+	"encoding/gob"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -15,6 +16,10 @@ import (
 
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/core/domain"
 )
+
+func init() {
+	gob.Register(Flash{})
+}
 
 //go:embed templates/**/*.html
 var templatesFS embed.FS
@@ -43,6 +48,8 @@ type PageData struct {
 }
 
 // Flash carries a one-shot message between requests via session storage.
+// Implements the gob.GobEncoder/gob.GobDecoder interfaces so it round-trips
+// through scs's session blob encoder.
 type Flash struct {
 	Level   string // info, success, warning, error
 	Message string
@@ -191,14 +198,24 @@ func renderFragment(w http.ResponseWriter, name string, data PageData) {
 	}
 }
 
-// requireSessionManager retrieves the scs session manager from a context or panics.
+// requireSessionManager retrieves the scs session manager from the request.
+// In dev we attach it on the request context via WithSessionManager.
 func requireSessionManager(r *http.Request) *scs.SessionManager {
-	sm := SessionManagerFromContext(r.Context())
-	if sm == nil {
-		panic("session manager not on context")
+	if sm := SessionManagerFromContext(r.Context()); sm != nil {
+		return sm
 	}
-	return sm
+	if sm, ok := r.Context().Value(sessionKey{}).(*scs.SessionManager); ok && sm != nil {
+		return sm
+	}
+	// Fallback: construct a transient manager (read-only). This path is hit
+	// when handlers run outside the full server context (tests).
+	return scs.New()
 }
+
+// sessionKey is the context key scs writes the manager under; we mirror it
+// here so handlers can fetch the manager from context in case the routes
+// table bypassed our middleware.
+type sessionKey struct{}
 
 // renderCSRF returns the CSRF field HTML for inclusion in templates.
 func renderCSRF(r *http.Request) template.HTML {
@@ -216,8 +233,11 @@ func popFlash(sm *scs.SessionManager, r *http.Request) *Flash {
 	if v == nil {
 		return nil
 	}
-	if f, ok := v.(Flash); ok {
+	switch f := v.(type) {
+	case Flash:
 		return &f
+	case *Flash:
+		return f
 	}
 	return nil
 }

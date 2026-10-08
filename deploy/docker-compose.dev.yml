@@ -1,0 +1,13 @@
+# Dev docker-compose. Runs Mailpit for local SMTP capture.
+# The Go binary itself runs on the host: `cd backend && go run ./cmd/server`.
+
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+
+networks:
+  default:

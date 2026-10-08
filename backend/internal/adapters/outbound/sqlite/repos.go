@@ -174,10 +174,11 @@ const tournamentSelect = `
 SELECT id, name, description, format, status,
        min_players_per_match, max_players_per_match,
        players_advancing_per_round,
-       scheduled_start_at,
+       COALESCE(scheduled_start_at, ''),
        visibility, registration_mode, max_players,
        created_by, created_at, updated_at,
-       started_at, completed_at, cancelled_at, bracket_prng_seed
+       COALESCE(started_at, ''), COALESCE(completed_at, ''), COALESCE(cancelled_at, ''),
+       COALESCE(bracket_prng_seed, '')
 FROM tournaments
 `
 
@@ -227,6 +228,14 @@ func scanTournament(s scanner) (domain.Tournament, error) {
 		CancelledAt:              domain.ParseTimePtr(&cancelled),
 		BracketPRNGSeed:          domain.ParseInt64Ptr(seed),
 	}, nil
+}
+
+func timeStringPtr(s sql.NullString) *time.Time {
+	if !s.Valid || s.String == "" {
+		return nil
+	}
+	t, _ := domain.ParseTime(s.String)
+	return &t
 }
 
 type scanner interface{ Scan(dest ...any) error }

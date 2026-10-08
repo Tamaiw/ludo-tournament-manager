@@ -171,8 +171,12 @@ func (s *Server) Routes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(RequestID)
 	r.Use(RealIP)
-	r.Use(Logger)
 	r.Use(Recoverer)
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			next.ServeHTTP(w, WithSessionManager(req, s.sessionMgr))
+		})
+	})
 	r.Use(s.sessionMgr.LoadAndSave)
 
 	// CSRF: in dev we mark every request as plaintext so the Origin scheme check
@@ -185,6 +189,16 @@ func (s *Server) Routes() http.Handler {
 		csrf.Path("/"),
 	)
 	if !s.cfg.CookieSecure {
+		// `__Host-` prefix requires Secure (RFC 6265bis). Drop the prefix in
+		// dev so the cookie survives an http:// origin.
+		s.sessionMgr.Cookie.Name = "id"
+		csrfMiddleware = csrf.Protect(
+			s.cfg.CSRFKey,
+			csrf.Secure(false),
+			csrf.SameSite(csrf.SameSiteStrictMode),
+			csrf.MaxAge(3600),
+			csrf.Path("/"),
+		)
 		r.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				next.ServeHTTP(w, csrf.PlaintextHTTPRequest(r))
@@ -348,10 +362,29 @@ func (s *Server) sessionManager(_ context.Context) *scs.SessionManager {
 	return s.sessionMgr
 }
 
-// WSSubscribe is a placeholder WebSocket handler. T16 replaces it with a real
-// upgrade that joins the broadcaster's per-tournament room.
+// WSSubscribe upgrades the HTTP request to WebSocket and joins the
+// broadcaster's per-tournament room.
 func (s *Server) WSSubscribe(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "websocket handler not yet implemented (T16)", http.StatusServiceUnavailable)
+	t := TournamentFromContext(r.Context())
+	if t == nil {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	hub, ok := s.cfg.Broadcaster.(interface {
+		Upgrade(w http.ResponseWriter, r *http.Request, tournamentID string) (Subscription, error)
+	})
+	if !ok {
+		http.Error(w, "broadcaster does not support upgrade", http.StatusInternalServerError)
+		return
+	}
+	sub, err := hub.Upgrade(w, r, t.ID.String())
+	if err != nil {
+		return
+	}
+	s.cfg.Broadcaster.Register(t.ID.String(), sub)
 }
+
+// Subscription re-exports ports.Subscription for use by Server.WSSubscribe.
+type Subscription = ports.Subscription
 
 var _ = context.TODO

@@ -21,3 +21,17 @@ dist/
 
 # Dependencies
 node_modules/
+
+# Runtime data
+data/
+backups/
+*.db
+*.db-shm
+*.db-wal
+
+# Tooling
+.cbmignore
+.codebase-memory/
+
+# Agent scratch (already in .scratch/ but exclude agent-runtime files)
+.scratch/*/.scratchstate.json

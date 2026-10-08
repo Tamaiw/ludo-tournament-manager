@@ -1,0 +1,10 @@
+# Caddyfile for the Ludo Tournament Manager.
+# HTTPS terminates here; Caddy reverse-proxies to the app container.
+
+{$PUBLIC_URL} {
+  encode zstd gzip
+
+  reverse_proxy app:8080 {
+    header_up X-Real-IP {remote_host}
+  }
+}
