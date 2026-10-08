@@ -55,10 +55,10 @@ func TournamentFromContext(ctx context.Context) *domain.Tournament {
 
 // Role constants used by RequireTournamentRole.
 const (
-	RoleManager         = "manager"
-	RolePlayer          = "player"
-	RoleSpectatorToken  = "spectator_token"
-	RoleAnonymous       = "anonymous"
+	RoleManager        = "manager"
+	RolePlayer         = "player"
+	RoleSpectatorToken = "spectator_token"
+	RoleAnonymous      = "anonymous"
 )
 
 // visibilityAllowed checks whether an anonymous viewer can see a tournament.

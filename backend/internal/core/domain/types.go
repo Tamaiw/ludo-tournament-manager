@@ -15,20 +15,20 @@ import (
 
 type UserID string
 
-func NewUserID() UserID          { return UserID(uuid.NewString()) }
+func NewUserID() UserID           { return UserID(uuid.NewString()) }
 func (u UserID) String() string   { return string(u) }
 func ParseUserID(s string) UserID { return UserID(s) }
 
 type TournamentID string
 
-func NewTournamentID() TournamentID       { return TournamentID(uuid.NewString()) }
-func (t TournamentID) String() string    { return string(t) }
+func NewTournamentID() TournamentID           { return TournamentID(uuid.NewString()) }
+func (t TournamentID) String() string         { return string(t) }
 func ParseTournamentID(s string) TournamentID { return TournamentID(s) }
 
 type MatchID string
 
-func NewMatchID() MatchID        { return MatchID(uuid.NewString()) }
-func (m MatchID) String() string { return string(m) }
+func NewMatchID() MatchID           { return MatchID(uuid.NewString()) }
+func (m MatchID) String() string    { return string(m) }
 func ParseMatchID(s string) MatchID { return MatchID(s) }
 
 type SpectatorTokenID string
@@ -38,7 +38,7 @@ func (s SpectatorTokenID) String() string   { return string(s) }
 
 type AuthTokenID string
 
-func NewAuthTokenID() AuthTokenID { return AuthTokenID(uuid.NewString()) }
+func NewAuthTokenID() AuthTokenID    { return AuthTokenID(uuid.NewString()) }
 func (a AuthTokenID) String() string { return string(a) }
 
 type Slot string
@@ -141,7 +141,7 @@ func (s MatchStatus) Valid() bool {
 type AuthTokenKind string
 
 const (
-	AuthTokenInvite       AuthTokenKind = "invite"
+	AuthTokenInvite        AuthTokenKind = "invite"
 	AuthTokenPasswordReset AuthTokenKind = "password_reset"
 )
 
@@ -196,36 +196,36 @@ func (a AuditAction) Valid() bool {
 // ---- Errors ----
 
 var (
-	ErrEmptyName               = errors.New("name must not be empty")
-	ErrNameTooLong             = errors.New("name must be 120 characters or fewer")
-	ErrInvalidStatus           = errors.New("invalid tournament status")
-	ErrInvalidFormat           = errors.New("invalid tournament format")
-	ErrInvalidVisibility       = errors.New("invalid visibility")
-	ErrInvalidRegistrationMode = errors.New("invalid registration mode")
-	ErrInvalidSlot             = errors.New("invalid slot")
-	ErrInvalidMatchStatus      = errors.New("invalid match status")
-	ErrNotDraft                = errors.New("tournament is not in draft")
-	ErrNotRegistrationOpen     = errors.New("tournament is not open for registration")
-	ErrNotInProgress           = errors.New("tournament is not in progress")
-	ErrBracketLocked           = errors.New("tournament bracket is locked")
-	ErrAlreadyStarted          = errors.New("tournament has already been started")
-	ErrNotCancellable          = errors.New("tournament can only be cancelled from draft or registration_open")
-	ErrInvalidAdvanceMap       = errors.New("invalid players_advancing_per_round map")
-	ErrSeedOutOfRange          = errors.New("seed out of range")
-	ErrSeedInUse               = errors.New("seed already in use by another player")
-	ErrDownstreamLocked        = errors.New("downstream match has been played; result is locked")
-	ErrUserExists              = errors.New("user already exists")
-	ErrUserNotFound            = errors.New("user not found")
-	ErrTournamentNotFound      = errors.New("tournament not found")
-	ErrMatchNotFound           = errors.New("match not found")
-	ErrTokenNotFound           = errors.New("token not found")
-	ErrTokenExpired            = errors.New("token has expired")
-	ErrTokenUsed               = errors.New("token has already been used")
-	ErrNotParticipant          = errors.New("actor is not a participant in this match")
-	ErrWrongMatchStatus        = errors.New("match is not in the expected status")
-	ErrInvalidAdvancingPositions = errors.New("invalid advancing positions")
-	ErrAtCap                   = errors.New("tournament is at maximum player capacity")
-	ErrNotRegistered           = errors.New("user is not registered for this tournament")
+	ErrEmptyName                        = errors.New("name must not be empty")
+	ErrNameTooLong                      = errors.New("name must be 120 characters or fewer")
+	ErrInvalidStatus                    = errors.New("invalid tournament status")
+	ErrInvalidFormat                    = errors.New("invalid tournament format")
+	ErrInvalidVisibility                = errors.New("invalid visibility")
+	ErrInvalidRegistrationMode          = errors.New("invalid registration mode")
+	ErrInvalidSlot                      = errors.New("invalid slot")
+	ErrInvalidMatchStatus               = errors.New("invalid match status")
+	ErrNotDraft                         = errors.New("tournament is not in draft")
+	ErrNotRegistrationOpen              = errors.New("tournament is not open for registration")
+	ErrNotInProgress                    = errors.New("tournament is not in progress")
+	ErrBracketLocked                    = errors.New("tournament bracket is locked")
+	ErrAlreadyStarted                   = errors.New("tournament has already been started")
+	ErrNotCancellable                   = errors.New("tournament can only be cancelled from draft or registration_open")
+	ErrInvalidAdvanceMap                = errors.New("invalid players_advancing_per_round map")
+	ErrSeedOutOfRange                   = errors.New("seed out of range")
+	ErrSeedInUse                        = errors.New("seed already in use by another player")
+	ErrDownstreamLocked                 = errors.New("downstream match has been played; result is locked")
+	ErrUserExists                       = errors.New("user already exists")
+	ErrUserNotFound                     = errors.New("user not found")
+	ErrTournamentNotFound               = errors.New("tournament not found")
+	ErrMatchNotFound                    = errors.New("match not found")
+	ErrTokenNotFound                    = errors.New("token not found")
+	ErrTokenExpired                     = errors.New("token has expired")
+	ErrTokenUsed                        = errors.New("token has already been used")
+	ErrNotParticipant                   = errors.New("actor is not a participant in this match")
+	ErrWrongMatchStatus                 = errors.New("match is not in the expected status")
+	ErrInvalidAdvancingPositions        = errors.New("invalid advancing positions")
+	ErrAtCap                            = errors.New("tournament is at maximum player capacity")
+	ErrNotRegistered                    = errors.New("user is not registered for this tournament")
 	ErrInvalidRegistrationModeForAction = errors.New("invalid registration mode for this action")
 )
 
@@ -266,25 +266,25 @@ func NewUser(email, name, passwordHash string, now time.Time) (User, error) {
 }
 
 type Tournament struct {
-	ID                         TournamentID
-	Name                       string
-	Description                string
-	Format                     TournamentFormat
-	Status                     TournamentStatus
-	MinPlayersPerMatch         int
-	MaxPlayersPerMatch         int
-	PlayersAdvancingPerRound   map[string]int
-	ScheduledStartAt           *time.Time
-	Visibility                 Visibility
-	RegistrationMode           RegistrationMode
-	MaxPlayers                 int
-	CreatedBy                  UserID
-	CreatedAt                  time.Time
-	UpdatedAt                  time.Time
-	StartedAt                  *time.Time
-	CompletedAt                *time.Time
-	CancelledAt                *time.Time
-	BracketPRNGSeed            *int64
+	ID                       TournamentID
+	Name                     string
+	Description              string
+	Format                   TournamentFormat
+	Status                   TournamentStatus
+	MinPlayersPerMatch       int
+	MaxPlayersPerMatch       int
+	PlayersAdvancingPerRound map[string]int
+	ScheduledStartAt         *time.Time
+	Visibility               Visibility
+	RegistrationMode         RegistrationMode
+	MaxPlayers               int
+	CreatedBy                UserID
+	CreatedAt                time.Time
+	UpdatedAt                time.Time
+	StartedAt                *time.Time
+	CompletedAt              *time.Time
+	CancelledAt              *time.Time
+	BracketPRNGSeed          *int64
 }
 
 func (t Tournament) IsTerminal() bool {
@@ -450,15 +450,15 @@ type MatchParticipant struct {
 // ---- AuthToken ----
 
 type AuthToken struct {
-	ID         AuthTokenID
-	Kind       AuthTokenKind
-	UserID     *UserID
-	Email      string
-	TokenHash  string
-	ExpiresAt  time.Time
-	UsedAt     *time.Time
-	CreatedBy  *UserID
-	CreatedAt  time.Time
+	ID        AuthTokenID
+	Kind      AuthTokenKind
+	UserID    *UserID
+	Email     string
+	TokenHash string
+	ExpiresAt time.Time
+	UsedAt    *time.Time
+	CreatedBy *UserID
+	CreatedAt time.Time
 }
 
 func (a AuthToken) IsUsable(now time.Time) error {
@@ -509,10 +509,10 @@ func NewAuditLogID() AuditLogID { return AuditLogID(uuid.NewString()) }
 
 // Bracket is the per-round layout returned by the pure generator.
 type Bracket struct {
-	TotalRounds   int
-	FinalFour     bool
-	TotalPlayers  int
-	Rounds        []RoundShape
+	TotalRounds  int
+	FinalFour    bool
+	TotalPlayers int
+	Rounds       []RoundShape
 }
 
 type RoundShape struct {

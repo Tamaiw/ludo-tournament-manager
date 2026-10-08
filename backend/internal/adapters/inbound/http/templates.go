@@ -66,7 +66,7 @@ var (
 func loadTemplatesOnce() error {
 	tmplOnce.Do(func() {
 		funcs := template.FuncMap{
-			"fmtTime":    func(t time.Time) string { return t.Format(time.RFC3339) },
+			"fmtTime":     func(t time.Time) string { return t.Format(time.RFC3339) },
 			"statusClass": func(s domain.TournamentStatus) string { return "status-" + string(s) },
 		}
 		// Parse the layout/header fragments first.

@@ -15,13 +15,13 @@ var _ = scs.New
 
 // AuthHandler wires the sign-in / sign-out / change-password / password-reset endpoints.
 type AuthHandler struct {
-	Users         ports.UserRepository
-	SignIn        *services.SignIn
-	ChangePassword *services.ChangePassword
+	Users                ports.UserRepository
+	SignIn               *services.SignIn
+	ChangePassword       *services.ChangePassword
 	RequestPasswordReset *services.RequestPasswordReset
-	RedeemPasswordReset *services.RedeemPasswordReset
-	Hasher        ports.PasswordHasher
-	Clock         ports.Clock
+	RedeemPasswordReset  *services.RedeemPasswordReset
+	Hasher               ports.PasswordHasher
+	Clock                ports.Clock
 }
 
 // SignInPage renders GET /sign-in.

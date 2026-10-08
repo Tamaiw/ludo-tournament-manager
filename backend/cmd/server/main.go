@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
+	httpinbound "github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/http"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/ws"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/argon2"
 	migrationspkg "github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/migrations"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/smtp"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/outbound/sqlite"
-	httpinbound "github.com/Tamaiw/ludo-tournament-manager/backend/internal/adapters/inbound/http"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/core/ports"
 	"github.com/Tamaiw/ludo-tournament-manager/backend/internal/core/services"
 )
@@ -56,20 +56,20 @@ func main() {
 
 	// Build every service.
 	svc := services.New(services.BuildParams{
-		Users:               repo.Users,
-		Hasher:              hasher,
-		Clock:               clock,
-		Tournaments:         repo.Tournaments,
-		TManagers:           repo.TournamentManagers,
-		TPlayers:            repo.TournamentPlayers,
-		AuthTokens:          repo.AuthTokens,
-		SpectatorTokens:     repo.TournamentSpectatorTokens,
-		Matches:             repo.Matches,
-		MatchParts:          repo.MatchParticipants,
-		AuditLog:            repo.AuditLog,
-		Email:               email,
-		Broadcaster:         broadcaster,
-		PublicURL:           cfg.PublicURL,
+		Users:           repo.Users,
+		Hasher:          hasher,
+		Clock:           clock,
+		Tournaments:     repo.Tournaments,
+		TManagers:       repo.TournamentManagers,
+		TPlayers:        repo.TournamentPlayers,
+		AuthTokens:      repo.AuthTokens,
+		SpectatorTokens: repo.TournamentSpectatorTokens,
+		Matches:         repo.Matches,
+		MatchParts:      repo.MatchParticipants,
+		AuditLog:        repo.AuditLog,
+		Email:           email,
+		Broadcaster:     broadcaster,
+		PublicURL:       cfg.PublicURL,
 	})
 
 	srv := httpinbound.New(httpinbound.Config{

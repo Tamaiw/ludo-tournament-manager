@@ -23,9 +23,9 @@ func init() { _ = context.TODO }
 
 // IndexHandler handles the public tournament index and dashboard.
 type IndexHandler struct {
-	Tournaments    ports.TournamentRepository
-	TPlayers       ports.TournamentPlayerRepository
-	TManagers      ports.TournamentManagerRepository
+	Tournaments ports.TournamentRepository
+	TPlayers    ports.TournamentPlayerRepository
+	TManagers   ports.TournamentManagerRepository
 }
 
 // PublicIndex renders GET / — the anonymous-visible public tournament index.
@@ -97,30 +97,30 @@ func (t *TournamentManagersAlias) IsManager(ctx context.Context, tid domain.Tour
 
 // TournamentHandler handles tournament CRUD, lifecycle, visibility, and settings.
 type TournamentHandler struct {
-	Tournaments           ports.TournamentRepository
-	TManagers             ports.TournamentManagerRepository
-	TPlayers              ports.TournamentPlayerRepository
-	SpectatorTokens       ports.TournamentSpectatorTokenRepository
-	Matches               ports.MatchRepository
-	AuditLog              ports.AuditLogRepository
-	Users                 ports.UserRepository
-	CreateTournament      *services.CreateTournament
-	EditTournament        *services.EditTournament
-	ChangeVisibility      *services.ChangeVisibility
+	Tournaments            ports.TournamentRepository
+	TManagers              ports.TournamentManagerRepository
+	TPlayers               ports.TournamentPlayerRepository
+	SpectatorTokens        ports.TournamentSpectatorTokenRepository
+	Matches                ports.MatchRepository
+	AuditLog               ports.AuditLogRepository
+	Users                  ports.UserRepository
+	CreateTournament       *services.CreateTournament
+	EditTournament         *services.EditTournament
+	ChangeVisibility       *services.ChangeVisibility
 	ChangeRegistrationMode *services.ChangeRegistrationMode
-	OpenRegistration      *services.OpenRegistration
-	CloseRegistration     *services.CloseRegistration
-	StartTournament       *services.StartTournament
-	CancelTournament      *services.CancelTournament
-	ForceCloseTournament  *services.ForceCloseTournament
-	PreviewBracket        *services.PreviewBracket
-	AddManager            *services.AddManager
-	RemoveManager         *services.RemoveManager
-	IssueSpectatorToken   *services.IssueSpectatorToken
-	RevokeSpectatorToken  *services.RevokeSpectatorToken
-	InviteUser            *services.InviteUser
-	Clock                 ports.Clock
-	PublicURL             string
+	OpenRegistration       *services.OpenRegistration
+	CloseRegistration      *services.CloseRegistration
+	StartTournament        *services.StartTournament
+	CancelTournament       *services.CancelTournament
+	ForceCloseTournament   *services.ForceCloseTournament
+	PreviewBracket         *services.PreviewBracket
+	AddManager             *services.AddManager
+	RemoveManager          *services.RemoveManager
+	IssueSpectatorToken    *services.IssueSpectatorToken
+	RevokeSpectatorToken   *services.RevokeSpectatorToken
+	InviteUser             *services.InviteUser
+	Clock                  ports.Clock
+	PublicURL              string
 }
 
 // NewTournamentPage renders GET /tournaments/new.
@@ -587,11 +587,11 @@ func jsonUnmarshal(data []byte, v any) error { return defaultJSON.Unmarshal(data
 
 // PlayerHandler handles roster management.
 type PlayerHandler struct {
-	Tournaments  ports.TournamentRepository
-	TPlayers     ports.TournamentPlayerRepository
-	Users        ports.UserRepository
-	RegisterPlayer   *services.RegisterPlayer
-	AddPlayerByUser  *services.AddPlayerByUser
+	Tournaments     ports.TournamentRepository
+	TPlayers        ports.TournamentPlayerRepository
+	Users           ports.UserRepository
+	RegisterPlayer  *services.RegisterPlayer
+	AddPlayerByUser *services.AddPlayerByUser
 	WithdrawPlayer  *services.WithdrawPlayer
 	EditSeed        *services.EditSeed
 	InviteUser      *services.InviteUser
@@ -849,7 +849,7 @@ func (h *MatchHandler) MatchPage(w http.ResponseWriter, r *http.Request) {
 		Flash:     popFlash(sm, r),
 		Form:      map[string]string{},
 		Bracket: &domain.Bracket{
-			Rounds:   nil,
+			Rounds: nil,
 		},
 	}
 	data.Tournament = &t
@@ -976,10 +976,10 @@ func (h *AuditHandler) AuditLogPage(w http.ResponseWriter, r *http.Request) {
 
 // InviteHandler handles invite acceptance.
 type InviteHandler struct {
-	Users      ports.UserRepository
-	AuthTokens ports.AuthTokenRepository
-	TPlayers   ports.TournamentPlayerRepository
-	Clock      ports.Clock
+	Users        ports.UserRepository
+	AuthTokens   ports.AuthTokenRepository
+	TPlayers     ports.TournamentPlayerRepository
+	Clock        ports.Clock
 	AcceptInvite *services.AcceptInvite
 }
 
@@ -1027,8 +1027,8 @@ func (h *InviteHandler) AcceptInviteSubmit(w http.ResponseWriter, r *http.Reques
 
 // PasswordResetHandler handles password reset.
 type PasswordResetHandler struct {
-	Users               ports.UserRepository
-	AuthTokens          ports.AuthTokenRepository
+	Users                ports.UserRepository
+	AuthTokens           ports.AuthTokenRepository
 	RequestPasswordReset *services.RequestPasswordReset
 	RedeemPasswordReset  *services.RedeemPasswordReset
 }

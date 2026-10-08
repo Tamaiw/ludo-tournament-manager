@@ -10,8 +10,8 @@ import (
 )
 
 type fakeUserRepo struct {
-	users   map[string]domain.User
-	byID    map[domain.UserID]domain.User
+	users map[string]domain.User
+	byID  map[domain.UserID]domain.User
 }
 
 func newFakeUserRepo() *fakeUserRepo {

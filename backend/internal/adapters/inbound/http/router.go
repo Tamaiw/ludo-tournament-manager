@@ -22,7 +22,7 @@ type Config struct {
 	Tournaments        ports.TournamentRepository
 	TournamentManagers ports.TournamentManagerRepository
 	TournamentPlayers  ports.TournamentPlayerRepository
-	SpectatorTokens     ports.TournamentSpectatorTokenRepository
+	SpectatorTokens    ports.TournamentSpectatorTokenRepository
 	Matches            ports.MatchRepository
 	AuditLog           ports.AuditLogRepository
 	AuthTokens         ports.AuthTokenRepository
@@ -44,18 +44,18 @@ type Config struct {
 
 // Server is the HTTP inbound adapter.
 type Server struct {
-	cfg          Config
-	sessionMgr   *scs.SessionManager
-	authHandler  *AuthHandler
-	tourHandler  *TournamentHandler
-	playerHandler *PlayerHandler
-	matchHandler *MatchHandler
+	cfg            Config
+	sessionMgr     *scs.SessionManager
+	authHandler    *AuthHandler
+	tourHandler    *TournamentHandler
+	playerHandler  *PlayerHandler
+	matchHandler   *MatchHandler
 	bracketHandler *BracketHandler
-	indexHandler *IndexHandler
-	dlHandler    *DownloadHandler
-	inviteHandler *InviteHandler
-	auditHandler *AuditHandler
-	pwdHandler   *PasswordResetHandler
+	indexHandler   *IndexHandler
+	dlHandler      *DownloadHandler
+	inviteHandler  *InviteHandler
+	auditHandler   *AuditHandler
+	pwdHandler     *PasswordResetHandler
 }
 
 // New constructs a Server.
@@ -146,11 +146,11 @@ func New(cfg Config) *Server {
 		ExportBracketPNG: cfg.Services.ExportBracketPNG,
 	}
 	s.inviteHandler = &InviteHandler{
-		Users:         cfg.Users,
-		AuthTokens:    cfg.AuthTokens,
-		TPlayers:      cfg.TournamentPlayers,
-		Clock:         cfg.Clock,
-		AcceptInvite:  cfg.Services.AcceptInvite,
+		Users:        cfg.Users,
+		AuthTokens:   cfg.AuthTokens,
+		TPlayers:     cfg.TournamentPlayers,
+		Clock:        cfg.Clock,
+		AcceptInvite: cfg.Services.AcceptInvite,
 	}
 	s.auditHandler = &AuditHandler{
 		AuditLog:     cfg.AuditLog,

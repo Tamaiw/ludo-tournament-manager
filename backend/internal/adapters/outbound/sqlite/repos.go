@@ -17,7 +17,7 @@ import (
 
 // compile-time port assertions in one place.
 var (
-	_ ports.UserRepository                    = (*UserRepo)(nil)
+	_ ports.UserRepository                     = (*UserRepo)(nil)
 	_ ports.TournamentRepository               = (*TournamentRepo)(nil)
 	_ ports.TournamentManagerRepository        = (*TournamentManagerRepo)(nil)
 	_ ports.TournamentPlayerRepository         = (*TournamentPlayerRepo)(nil)
@@ -189,7 +189,7 @@ func scanTournament(s scanner) (domain.Tournament, error) {
 		scheduled, visibility, regMode,
 		createdBy, created, updated,
 		started, completed, cancelled, seed string
-		minPer, maxPer, maxPlayers            int
+		minPer, maxPer, maxPlayers int
 	)
 	if err := s.Scan(&id, &name, &description, &format, &status,
 		&minPer, &maxPer, &advJSON,
@@ -316,7 +316,7 @@ func (r *TournamentPlayerRepo) ListByTournament(ctx context.Context, tid domain.
 	for rows.Next() {
 		var (
 			tidStr, pidStr, regStr string
-			seed                 sql.NullInt64
+			seed                   sql.NullInt64
 		)
 		if err := rows.Scan(&tidStr, &pidStr, &regStr, &seed); err != nil {
 			return nil, err
@@ -827,8 +827,8 @@ func (r *AuditLogRepo) ListByTournament(ctx context.Context, tid domain.Tourname
 	for rows.Next() {
 		var (
 			id, tidStr, action, subject, recorded string
-			actor                              sql.NullString
-			before, after                     sql.NullString
+			actor                                 sql.NullString
+			before, after                         sql.NullString
 		)
 		if err := rows.Scan(&id, &tidStr, &actor, &action, &subject, &before, &after, &recorded); err != nil {
 			return nil, err

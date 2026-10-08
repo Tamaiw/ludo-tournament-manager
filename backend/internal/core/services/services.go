@@ -61,14 +61,14 @@ func beforeAfter(before, after any) (string, string) {
 // ---- Errors ----
 
 var (
-	ErrInvalidCredentials      = errors.New("invalid credentials")
-	ErrWrongCurrentPassword     = errors.New("current password is incorrect")
-	ErrPasswordMismatch         = errors.New("new password and confirmation do not match")
-	ErrWeakPassword             = errors.New("password must be at least 8 characters")
-	ErrTargetUserNotFound       = errors.New("target user not found")
-	ErrInvalidSlot               = errors.New("invalid slot in advancing positions")
-	ErrSeedRequired              = errors.New("player already has a seed; clear it first")
-	ErrDuplicateSlotInPositions  = errors.New("duplicate slot in advancing positions")
+	ErrInvalidCredentials         = errors.New("invalid credentials")
+	ErrWrongCurrentPassword       = errors.New("current password is incorrect")
+	ErrPasswordMismatch           = errors.New("new password and confirmation do not match")
+	ErrWeakPassword               = errors.New("password must be at least 8 characters")
+	ErrTargetUserNotFound         = errors.New("target user not found")
+	ErrInvalidSlot                = errors.New("invalid slot in advancing positions")
+	ErrSeedRequired               = errors.New("player already has a seed; clear it first")
+	ErrDuplicateSlotInPositions   = errors.New("duplicate slot in advancing positions")
 	ErrAdvancingPositionsRequired = errors.New("must record advancing positions for all advancers")
 	ErrIncorrectDVPNCount         = errors.New("number of advancing positions must equal the round's advance count")
 )
@@ -207,13 +207,13 @@ func (s RequestPasswordReset) Handle(ctx context.Context, cmd RequestPasswordRes
 	now := s.Clock.Now()
 	raw := newToken()
 	token := domain.AuthToken{
-		ID:         domain.NewAuthTokenID(),
-		Kind:       domain.AuthTokenPasswordReset,
-		Email:      target.Email,
-		TokenHash:  hashToken(raw),
-		ExpiresAt:  now.Add(1 * time.Hour),
-		CreatedBy:  &cmd.ActorID,
-		CreatedAt:  now,
+		ID:        domain.NewAuthTokenID(),
+		Kind:      domain.AuthTokenPasswordReset,
+		Email:     target.Email,
+		TokenHash: hashToken(raw),
+		ExpiresAt: now.Add(1 * time.Hour),
+		CreatedBy: &cmd.ActorID,
+		CreatedAt: now,
 	}
 	if err := s.AuthTokens.Save(ctx, token); err != nil {
 		return "", err
@@ -283,16 +283,16 @@ type CreateTournament struct {
 }
 
 type CreateTournamentCmd struct {
-	ActorID              domain.UserID
-	Name                 string
-	Description          string
-	MinPlayersPerMatch   int
-	MaxPlayersPerMatch   int
-	AdvanceMap           map[string]int
-	ScheduledStartAt     *time.Time
-	Visibility           domain.Visibility
-	RegistrationMode     domain.RegistrationMode
-	MaxPlayers           int
+	ActorID            domain.UserID
+	Name               string
+	Description        string
+	MinPlayersPerMatch int
+	MaxPlayersPerMatch int
+	AdvanceMap         map[string]int
+	ScheduledStartAt   *time.Time
+	Visibility         domain.Visibility
+	RegistrationMode   domain.RegistrationMode
+	MaxPlayers         int
 }
 
 func (t *CreateTournament) Handle(ctx context.Context, cmd CreateTournamentCmd) (domain.Tournament, error) {
@@ -333,14 +333,14 @@ type EditTournament struct {
 }
 
 type EditTournamentCmd struct {
-	ActorID             domain.UserID
-	TournamentID        domain.TournamentID
-	Name                string
-	Description         string
-	MinPlayersPerMatch  int
-	MaxPlayersPerMatch  int
-	AdvanceMap          map[string]int
-	ScheduledStartAt    *time.Time
+	ActorID            domain.UserID
+	TournamentID       domain.TournamentID
+	Name               string
+	Description        string
+	MinPlayersPerMatch int
+	MaxPlayersPerMatch int
+	AdvanceMap         map[string]int
+	ScheduledStartAt   *time.Time
 }
 
 func (s *EditTournament) Handle(ctx context.Context, cmd EditTournamentCmd) (domain.Tournament, error) {
@@ -428,8 +428,8 @@ type ChangeRegistrationMode struct {
 }
 
 type ChangeRegistrationModeCmd struct {
-	ActorID         domain.UserID
-	TournamentID    domain.TournamentID
+	ActorID          domain.UserID
+	TournamentID     domain.TournamentID
 	RegistrationMode domain.RegistrationMode
 }
 
@@ -487,7 +487,7 @@ func (s *OpenRegistration) Handle(ctx context.Context, cmd OpenRegistrationCmd) 
 	}
 	writeAudit(ctx, s.AuditLog, s.Clock, domain.AuditLogEntry{
 		TournamentID: updated.ID, ActorID: &cmd.ActorID,
-		Action: domain.ActionRegistrationOpened,
+		Action:    domain.ActionRegistrationOpened,
 		SubjectID: updated.ID.String(),
 	})
 	return updated, nil
@@ -518,7 +518,7 @@ func (s *CloseRegistration) Handle(ctx context.Context, cmd CloseRegistrationCmd
 	}
 	writeAudit(ctx, s.AuditLog, s.Clock, domain.AuditLogEntry{
 		TournamentID: updated.ID, ActorID: &cmd.ActorID,
-		Action: domain.ActionRegistrationClosed,
+		Action:    domain.ActionRegistrationClosed,
 		SubjectID: updated.ID.String(),
 	})
 	return updated, nil
@@ -527,10 +527,10 @@ func (s *CloseRegistration) Handle(ctx context.Context, cmd CloseRegistrationCmd
 // ---- RegisterPlayer (self-register) ----
 
 type RegisterPlayer struct {
-	Tournaments     ports.TournamentRepository
-	TPlayers        ports.TournamentPlayerRepository
-	AuditLog        ports.AuditLogRepository
-	Clock           ports.Clock
+	Tournaments ports.TournamentRepository
+	TPlayers    ports.TournamentPlayerRepository
+	AuditLog    ports.AuditLogRepository
+	Clock       ports.Clock
 }
 
 type RegisterPlayerCmd struct {
@@ -628,10 +628,10 @@ type WithdrawPlayer struct {
 }
 
 type WithdrawPlayerCmd struct {
-	ActorID        domain.UserID
-	IsManager      bool
-	TournamentID   domain.TournamentID
-	PlayerID       domain.UserID
+	ActorID      domain.UserID
+	IsManager    bool
+	TournamentID domain.TournamentID
+	PlayerID     domain.UserID
 }
 
 func (s *WithdrawPlayer) Handle(ctx context.Context, cmd WithdrawPlayerCmd) error {
@@ -662,13 +662,13 @@ func (s *WithdrawPlayer) Handle(ctx context.Context, cmd WithdrawPlayerCmd) erro
 // ---- InviteUser ----
 
 type InviteUser struct {
-	Tournaments       ports.TournamentRepository
-	TPlayers          ports.TournamentPlayerRepository
-	AuthTokens        ports.AuthTokenRepository
-	Email             ports.EmailSender
-	AuditLog         ports.AuditLogRepository
-	Clock             ports.Clock
-	PublicURL         string
+	Tournaments ports.TournamentRepository
+	TPlayers    ports.TournamentPlayerRepository
+	AuthTokens  ports.AuthTokenRepository
+	Email       ports.EmailSender
+	AuditLog    ports.AuditLogRepository
+	Clock       ports.Clock
+	PublicURL   string
 }
 
 type InviteUserCmd struct {
@@ -685,13 +685,13 @@ func (s *InviteUser) Handle(ctx context.Context, cmd InviteUserCmd) (string, err
 	now := s.Clock.Now()
 	raw := newToken()
 	at := domain.AuthToken{
-		ID:         domain.NewAuthTokenID(),
-		Kind:       domain.AuthTokenInvite,
-		Email:      strings.ToLower(strings.TrimSpace(cmd.Email)),
-		TokenHash:  hashToken(raw),
-		ExpiresAt:  now.Add(7 * 24 * time.Hour),
-		CreatedBy:  &cmd.ActorID,
-		CreatedAt:  now,
+		ID:        domain.NewAuthTokenID(),
+		Kind:      domain.AuthTokenInvite,
+		Email:     strings.ToLower(strings.TrimSpace(cmd.Email)),
+		TokenHash: hashToken(raw),
+		ExpiresAt: now.Add(7 * 24 * time.Hour),
+		CreatedBy: &cmd.ActorID,
+		CreatedAt: now,
 	}
 	if err := s.AuthTokens.Save(ctx, at); err != nil {
 		return "", err
@@ -715,18 +715,18 @@ func (s *InviteUser) Handle(ctx context.Context, cmd InviteUserCmd) (string, err
 // ---- AcceptInvite ----
 
 type AcceptInvite struct {
-	Users       ports.UserRepository
-	AuthTokens  ports.AuthTokenRepository
-	TPlayers    ports.TournamentPlayerRepository
-	Hasher      ports.PasswordHasher
-	Clock       ports.Clock
-	AuditLog    ports.AuditLogRepository
+	Users      ports.UserRepository
+	AuthTokens ports.AuthTokenRepository
+	TPlayers   ports.TournamentPlayerRepository
+	Hasher     ports.PasswordHasher
+	Clock      ports.Clock
+	AuditLog   ports.AuditLogRepository
 }
 
 type AcceptInviteCmd struct {
-	RawToken       string
-	Name           string
-	Password       string
+	RawToken string
+	Name     string
+	Password string
 }
 
 func (s *AcceptInvite) Handle(ctx context.Context, cmd AcceptInviteCmd) (domain.User, error) {
@@ -1102,13 +1102,14 @@ func (s bySeed) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 // Ensure non-decreasing ordering.
 var _ = sort.Slice
+
 // ---- Bracket generation ----
 
 // GenerateBracket is the pure bracket-shape generator used by preview and start.
 type BracketSpec struct {
 	TotalPlayers int
-	Min, Max    int
-	AdvanceMap  map[string]int
+	Min, Max     int
+	AdvanceMap   map[string]int
 }
 
 // GenerateBracket returns a flat list of rounds (each with matches and the
@@ -1227,13 +1228,13 @@ type MatchLayout struct {
 // ---- StartTournament ----
 
 type StartTournament struct {
-	Tournaments  ports.TournamentRepository
-	TPlayers     ports.TournamentPlayerRepository
-	Matches      ports.MatchRepository
-	MatchParts   ports.MatchParticipantRepository
-	AuditLog     ports.AuditLogRepository
-	Clock        ports.Clock
-	Broadcaster  ports.Broadcaster
+	Tournaments ports.TournamentRepository
+	TPlayers    ports.TournamentPlayerRepository
+	Matches     ports.MatchRepository
+	MatchParts  ports.MatchParticipantRepository
+	AuditLog    ports.AuditLogRepository
+	Clock       ports.Clock
+	Broadcaster ports.Broadcaster
 }
 
 type StartTournamentCmd struct {
@@ -1440,10 +1441,10 @@ func (s *PreviewBracket) Handle(ctx context.Context, cmd PreviewBracketCmd) (dom
 		}
 		_ = advMap
 		rs[i] = domain.RoundShape{
-			Round:      r.Round,
-			Matches:    len(r.Matches),
-			PlayersIn:  totalPlayersIn(r.Matches),
-			AdvanceMap: advMap,
+			Round:       r.Round,
+			Matches:     len(r.Matches),
+			PlayersIn:   totalPlayersIn(r.Matches),
+			AdvanceMap:  advMap,
 			Description: describeRound(r),
 		}
 	}
@@ -1521,8 +1522,8 @@ func (s *MarkMatchInProgress) Handle(ctx context.Context, cmd MarkMatchInProgres
 }
 
 type RecordMatchResult struct {
-	Matches ports.MatchRepository
-	Clock   ports.Clock
+	Matches  ports.MatchRepository
+	Clock    ports.Clock
 	AuditLog ports.AuditLogRepository
 }
 
@@ -1736,60 +1737,60 @@ func (s *ExportBracketPNG) Handle(ctx context.Context, cmd ExportBracketPNGCmd) 
 // burden from main.go and gives the httpinbound adapter a single struct to
 // read services from.
 type Bundle struct {
-	SignIn               *SignIn
-	ChangePassword       *ChangePassword
-	RequestPasswordReset *RequestPasswordReset
-	RedeemPasswordReset  *RedeemPasswordReset
-	CreateTournament     *CreateTournament
-	EditTournament       *EditTournament
-	ChangeVisibility     *ChangeVisibility
+	SignIn                 *SignIn
+	ChangePassword         *ChangePassword
+	RequestPasswordReset   *RequestPasswordReset
+	RedeemPasswordReset    *RedeemPasswordReset
+	CreateTournament       *CreateTournament
+	EditTournament         *EditTournament
+	ChangeVisibility       *ChangeVisibility
 	ChangeRegistrationMode *ChangeRegistrationMode
-	OpenRegistration     *OpenRegistration
-	CloseRegistration    *CloseRegistration
-	StartTournament      *StartTournament
-	CancelTournament     *CancelTournament
-	ForceCloseTournament *ForceCloseTournament
-	RegisterPlayer       *RegisterPlayer
-	AddPlayerByUser      *AddPlayerByUser
-	WithdrawPlayer       *WithdrawPlayer
-	InviteUser           *InviteUser
-	AcceptInvite         *AcceptInvite
-	IssueSpectatorToken  *IssueSpectatorToken
-	RevokeSpectatorToken *RevokeSpectatorToken
-	EditSeed             *EditSeed
-	PreviewBracket       *PreviewBracket
-	MarkInProgress       *MarkMatchInProgress
-	RecordMatchResult    *RecordMatchResult
-	CorrectMatchResult   *CorrectMatchResult
-	AddManager           *AddManager
-	RemoveManager        *RemoveManager
-	ListAuditLog         *ListAuditLog
-	ExportBracketCSV     *ExportBracketCSV
-	ExportBracketPNG     *ExportBracketPNG
+	OpenRegistration       *OpenRegistration
+	CloseRegistration      *CloseRegistration
+	StartTournament        *StartTournament
+	CancelTournament       *CancelTournament
+	ForceCloseTournament   *ForceCloseTournament
+	RegisterPlayer         *RegisterPlayer
+	AddPlayerByUser        *AddPlayerByUser
+	WithdrawPlayer         *WithdrawPlayer
+	InviteUser             *InviteUser
+	AcceptInvite           *AcceptInvite
+	IssueSpectatorToken    *IssueSpectatorToken
+	RevokeSpectatorToken   *RevokeSpectatorToken
+	EditSeed               *EditSeed
+	PreviewBracket         *PreviewBracket
+	MarkInProgress         *MarkMatchInProgress
+	RecordMatchResult      *RecordMatchResult
+	CorrectMatchResult     *CorrectMatchResult
+	AddManager             *AddManager
+	RemoveManager          *RemoveManager
+	ListAuditLog           *ListAuditLog
+	ExportBracketCSV       *ExportBracketCSV
+	ExportBracketPNG       *ExportBracketPNG
 }
 
 // BuildParams carries every dependency a Bundle needs.
 type BuildParams struct {
-	Users            ports.UserRepository
-	Hasher           ports.PasswordHasher
-	Clock            ports.Clock
-	Tournaments      ports.TournamentRepository
-	TManagers        ports.TournamentManagerRepository
-	TPlayers         ports.TournamentPlayerRepository
-	AuthTokens       ports.AuthTokenRepository
-	SpectatorTokens  ports.TournamentSpectatorTokenRepository
-	Matches          ports.MatchRepository
-	MatchParts       ports.MatchParticipantRepository
-	AuditLog         ports.AuditLogRepository
-	Email            ports.EmailSender
-	Broadcaster      ports.Broadcaster
-	PublicURL        string
+	Users           ports.UserRepository
+	Hasher          ports.PasswordHasher
+	Clock           ports.Clock
+	Tournaments     ports.TournamentRepository
+	TManagers       ports.TournamentManagerRepository
+	TPlayers        ports.TournamentPlayerRepository
+	AuthTokens      ports.AuthTokenRepository
+	SpectatorTokens ports.TournamentSpectatorTokenRepository
+	Matches         ports.MatchRepository
+	MatchParts      ports.MatchParticipantRepository
+	AuditLog        ports.AuditLogRepository
+	Email           ports.EmailSender
+	Broadcaster     ports.Broadcaster
+	PublicURL       string
 }
 
 // New constructs a Bundle from the supplied dependencies.
 func New(p BuildParams) *Bundle {
 	b := &Bundle{
-		SignIn: &SignIn{Users: p.Users, Hasher: p.Hasher},
+		SignIn:         &SignIn{Users: p.Users, Hasher: p.Hasher},
 		ChangePassword: &ChangePassword{Users: p.Users, Hasher: p.Hasher, Clock: p.Clock},
 		RequestPasswordReset: &RequestPasswordReset{
 			Users: p.Users, AuthTokens: p.AuthTokens, Email: p.Email,

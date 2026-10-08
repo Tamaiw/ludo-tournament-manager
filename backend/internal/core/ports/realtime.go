@@ -9,9 +9,9 @@ import (
 type EventType string
 
 const (
-	EventMatchStatusChanged       EventType = "match_status_changed"
-	EventResultRecorded           EventType = "result_recorded"
-	EventBracketRebuilt           EventType = "bracket_rebuilt"
+	EventMatchStatusChanged         EventType = "match_status_changed"
+	EventResultRecorded             EventType = "result_recorded"
+	EventBracketRebuilt             EventType = "bracket_rebuilt"
 	EventTournamentLifecycleChanged EventType = "tournament_lifecycle_changed"
 )
 
